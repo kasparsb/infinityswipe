@@ -1,0 +1,32 @@
+.swipe {
+    @width: 400px;
+    width: @width;
+    height: 400px;
+    position: relative;
+
+    margin: 0 auto;
+    border: 2px solid red;
+
+    overflow: hidden;
+
+    z-index: 100;
+
+    &__item {
+        position: absolute;
+
+        z-index: 80;
+
+        top: 0;
+        left: 0;
+        width: @width;
+        height: 400px;
+
+        background: blue;
+        color: #fff;
+
+        &:nth-child(2n) {
+            background: pink;
+            color: #000;
+        }
+    }
+}
