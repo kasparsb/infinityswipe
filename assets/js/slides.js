@@ -27,6 +27,8 @@ Slides.prototype = {
         $(this.viewport.el).find('.swipe__item').each(function(){
             mthis.push(this)
         })
+
+        this.balanceSlides();
     },
 
     /**
@@ -177,21 +179,21 @@ Slides.prototype = {
             this.slides[i].x = this.slides[i].startX + offset;
 
             this.setX(this.slides[i].el, this.slides[i].x);
+        }
 
+        this.balanceSlides();
+    },
 
-            // Pārbaudām vai aiz viewport nav par maz slaidu
-            while (this.slidesCountAfterViewport() <= 1) {
-                // Pirmo no kreisās puses pārliekam uz beigām
-                this.push(this.shift().el);
-                i--;
-            }
+    balanceSlides: function() {
+        // Pārbaudām vai aiz viewport nav par maz slaidu
+        while (this.slidesCountAfterViewport() <= 1) {
+            // Pirmo no kreisās puses pārliekam uz beigām
+            this.push(this.shift().el);
+        }
 
-            // Pārbaudām vai pirms viewport nav par maz slaidu
-            if (this.slidesCountBeforeViewport() <= 1) {
-                this.unshift(this.pop().el);
-                i--;
-            }
-
+        // Pārbaudām vai pirms viewport nav par maz slaidu
+        while (this.slidesCountBeforeViewport() <= 1) {
+            this.unshift(this.pop().el);
         }
     },
 
