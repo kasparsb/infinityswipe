@@ -6,7 +6,13 @@ var Stepper = require('./stepper');
 var B1 = require('./bezier1');
 var B2 = require('./bezier1');
 
-var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth;
+var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth, animInProgress = false;
+
+function log(message) {
+    $.post('http://webing.local:8080/api/ping/debug', {
+        description: message
+    });
+}
 
 function initSwipe() {
     sw = new Swipe($el.get(0), {})
@@ -25,53 +31,58 @@ function initStepper() {
     stepper = new Stepper();
 }
 
-function startMove() {
+function startMove(c) {
+    if (animInProgress) {
+        return;
+    }
+
+    log('start move')
+
     slides.start();
 }
 
+function handleMove(d) {
+    if (animInProgress) {
+        return;
+    }
+    slides.setXOffset(d.offset.x);
+}
+
 function endMove(d) {
+    if (animInProgress) {
+        return;
+    }
+
+    animInProgress = true;
+
     var startProgress = (Math.abs(d.offset.x) / viewportWidth), p, duration, targetOffset;
 
     p = startProgress;
     duration = 800;
-    if (d.direction == 'left') {
-        if (startProgress < 0.3) {
-            p = 1-p;
-            duration = 1200;
-        }
+    
+    // Ja pabīdīts mazāk par trešo daļu, tad atpakaļ uz izejas pozīciju
+    if (!d.isSwipe && (startProgress < 0.3333)) {
+        p = 1-p;
     }
-
-    console.log('start', startProgress, p, d.offset.x);
-
+    
     stepper.runFrom(p, duration, [0,0,.12,1], function(progress){
         
         // Kalkulējam offset no progress
-        if (d.direction == 'left') {
-            // Ja progress mazāks par pusi, tad ejam atpakaļ uz sākumu
-            if (startProgress < 0.3) {
-                targetOffset = -1*(viewportWidth - (viewportWidth * progress));
-            }
-            else {
-                targetOffset = -1*viewportWidth * progress;
-            }
+        // Ja progress mazāks par pusi, tad ejam atpakaļ uz sākumu
+        if (!d.isSwipe && (startProgress < 0.3333)) {
+            targetOffset = viewportWidth - (viewportWidth * progress);
         }
-        else if (d.direction == 'right') {
-            directionMultiplier = 1;
+        else {
+            targetOffset = viewportWidth * progress;
         }
 
+        targetOffset *= d.direction == 'left' ? -1 : 1;
 
-        slides.setXOffset(targetOffset);
-
-        console.log('progress', progress, targetOffset);
-        
+        slides.setXOffset(targetOffset);        
 
     }, function(){
-        console.log('stepp done');
+        animInProgress = false;
     })
-}
-
-function handleMove(d) {
-    slides.setXOffset(d.offset.x);
 }
 
 function handleSlideAdd(index, el) {
