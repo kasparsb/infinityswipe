@@ -1,8 +1,8 @@
 .swipe {
-    @width: 400px;
-    width: @width;
+    max-width: 500px;
     height: 400px;
     position: relative;
+    box-sizing: border-box;
 
     margin: 0 auto;
     border: 2px solid red;
@@ -14,12 +14,14 @@
     &__item {
         position: absolute;
 
+        box-sizing: border-box;
+
         z-index: 80;
 
         top: 0;
         left: 0;
-        width: @width;
-        height: 400px;
+        right: 0;
+        bottom: 0;
 
         background: blue;
         color: #fff;

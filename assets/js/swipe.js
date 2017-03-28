@@ -6,16 +6,18 @@ var Stepper = require('./stepper');
 var B1 = require('./bezier1');
 var B2 = require('./bezier1');
 
-var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth, animInProgress = false;
+var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth, animInProgress = false, isMoveStarted = false;
 
-//var curve = [0,0,.12,1];
-var stepperCurve = [0,0,1,1];
-var stepperDuration = 600;
+var stepperCurve = [0,0,.12,1];
+//var stepperCurve = [0,0,1,1];
+var stepperDuration = 400;
 
 function log(message) {
-    $.post('http://webing.local:8080/api/ping/debug', {
-        description: message
-    });
+    // $.post('http://webing.local:8080/api/ping/debug', {
+    //     description: message
+    // });
+
+    //console.log(message);
 }
 
 function initSwipe() {
@@ -40,6 +42,8 @@ function startMove(c) {
         return;
     }
 
+    isMoveStarted = true;
+
     log('start move')
 
     slides.start();
@@ -49,6 +53,13 @@ function handleMove(d) {
     if (animInProgress) {
         return;
     }
+
+    if (!isMoveStarted) {
+        return;
+    }
+
+    log('move');
+
     slides.setXOffset(d.offset.x);
 }
 
@@ -57,7 +68,12 @@ function endMove(d) {
         return;
     }
 
+    if (!isMoveStarted) {
+        return;
+    }
+
     animInProgress = true;
+    isMoveStarted = false;
 
     var startProgress = (Math.abs(d.offset.x) / viewportWidth), p, targetOffset;
 
