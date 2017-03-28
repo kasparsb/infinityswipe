@@ -64,7 +64,8 @@ Stepper.prototype = {
         var d = from, prevR = 0, prevD;
 
         while (d < to) {
-            if (inceptionLevel++ > 10) {
+            // Lai ir lielāka precizītāte
+            if (inceptionLevel++ > 40) {
                 return d;
             }
 
