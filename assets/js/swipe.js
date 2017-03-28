@@ -8,6 +8,10 @@ var B2 = require('./bezier1');
 
 var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth, animInProgress = false;
 
+//var curve = [0,0,.12,1];
+var stepperCurve = [0,0,1,1];
+var stepperDuration = 600;
+
 function log(message) {
     $.post('http://webing.local:8080/api/ping/debug', {
         description: message
@@ -55,17 +59,16 @@ function endMove(d) {
 
     animInProgress = true;
 
-    var startProgress = (Math.abs(d.offset.x) / viewportWidth), p, duration, targetOffset;
+    var startProgress = (Math.abs(d.offset.x) / viewportWidth), p, targetOffset;
 
     p = startProgress;
-    duration = 800;
     
     // Ja pabīdīts mazāk par trešo daļu, tad atpakaļ uz izejas pozīciju
     if (!d.isSwipe && (startProgress < 0.3333)) {
         p = 1-p;
     }
     
-    stepper.runFrom(p, duration, [0,0,.12,1], function(progress){
+    stepper.runFrom(p, stepperDuration, stepperCurve, function(progress){
         
         // Kalkulējam offset no progress
         // Ja progress mazāks par pusi, tad ejam atpakaļ uz sākumu
