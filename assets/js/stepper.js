@@ -6,6 +6,8 @@ var Stepper = function() {
     this.precision = 10000000;
     this.progress = 0;
     this.current = 0;
+    this.requestId = 0;
+    this.inProgress = false;
 }
 
 Stepper.prototype = {
@@ -48,8 +50,18 @@ Stepper.prototype = {
         // Turpinām no padotā progress
         this.progress = progress;
 
+        this.inProgress = true;
+
 
         this.step();
+    },
+
+    /**
+     * Pārtraucam stepping
+     */
+    stop: function() {
+        cancelAnimationFrame(this.requestId);
+        this.done();
     },
 
     /**
@@ -97,15 +109,21 @@ Stepper.prototype = {
         return a > x2 && a < x1;
     },
 
+    isRunning: function() {
+        return this.inProgress;
+    },
+
     /**
      * Piefiksējam sākuma laiku
      */
     start: function() {
+        this.inProgress = true;
         this.startTime = +new Date();
         this.progress = 0;
     },
 
     done: function() {
+        this.inProgress = false;
         this.doneCallback();
     },
 
@@ -125,7 +143,7 @@ Stepper.prototype = {
 
             this.stepCallback(this.progress);
 
-            requestAnimationFrame(function(){
+            this.requestId = requestAnimationFrame(function(){
                 mthis.step()
             });
         }

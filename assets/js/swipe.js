@@ -6,11 +6,14 @@ var Stepper = require('./stepper');
 var B1 = require('./bezier1');
 var B2 = require('./bezier1');
 
-var $el, sw, slides, stepper, startPos = 0, offsetX = 0, viewportWidth, animInProgress = false, isMoveStarted = false;
+var $el, sw, slides, stepper, viewportWidth;
+var startPos = 0, offsetX = 0, isMoveStarted = false;
 
+//var stepperCurve = [0,0,1,1]; // linear
+
+// Šitā kombinācija ir laba
 var stepperCurve = [0,0,.12,1];
-//var stepperCurve = [0,0,1,1];
-var stepperDuration = 400;
+var stepperDuration = 2000;
 
 function log(message) {
     // $.post('http://webing.local:8080/api/ping/debug', {
@@ -24,7 +27,8 @@ function initSwipe() {
     sw = new Swipe($el.get(0), {})
         .on('start', startMove)
         .on('move', handleMove)
-        .on('end', endMove)
+        .on('end', endMove) // Notiek tikai, ja ir bijusi valid move
+        .on('touchend', endTouch) // Notiek vienmēr
 }
 
 function initSlides() {
@@ -38,33 +42,41 @@ function initStepper() {
 }
 
 function startMove(c) {
-    if (animInProgress) {
-        return;
+    if (stepper.isRunning()) {
+        stepper.stop();
     }
-
-    isMoveStarted = true;
-
-    log('start move')
-
+    
     slides.start();
+    isMoveStarted = true;
 }
 
 function handleMove(d) {
-    if (animInProgress) {
+    if (stepper.isRunning()) {
         return;
     }
 
     if (!isMoveStarted) {
         return;
     }
-
-    log('move');
 
     slides.setXOffset(d.offset.x);
 }
 
+function endTouch(d) {
+    
+}
+
 function endMove(d) {
-    if (animInProgress) {
+    var x = findSlideOffsetX(0, viewportWidth);
+
+    console.log('endmove', x);
+
+    if (typeof x == 'undefined') {
+        return;
+    }
+
+
+    if (stepper.isRunning()) {
         return;
     }
 
@@ -72,10 +84,11 @@ function endMove(d) {
         return;
     }
 
-    animInProgress = true;
     isMoveStarted = false;
 
-    var startProgress = (Math.abs(d.offset.x) / viewportWidth), p, targetOffset;
+    var startProgress = (Math.abs(x) / viewportWidth), p, targetOffset;
+
+    console.log('startprogress', startProgress, d.direction);
 
     p = startProgress;
     
@@ -97,15 +110,26 @@ function endMove(d) {
 
         targetOffset *= d.direction == 'left' ? -1 : 1;
 
-        slides.setXOffset(targetOffset);        
+        slides.setXOffset(targetOffset);
+
+
 
     }, function(){
-        animInProgress = false;
+        // Done
     })
 }
 
 function handleSlideAdd(index, el) {
     $(el).html('Slide '+index)
+}
+
+function findSlideOffsetX(start, stop) {
+    for (var i = 0; i < slides.slides.length; i++) {
+        if (slides.slides[i].x > start && slides.slides[i].x < stop) {
+            return slides.slides[i].x;
+        }
+    }
+    return undefined;
 }
 
 
