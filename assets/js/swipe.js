@@ -13,7 +13,7 @@ var startPos = 0, offsetX = 0, isMoveStarted = false;
 
 // Šitā kombinācija ir laba
 var stepperCurve = [0,0,.12,1];
-var stepperDuration = 2000;
+var stepperDuration = 300;
 
 function log(message) {
     // $.post('http://webing.local:8080/api/ping/debug', {
@@ -27,8 +27,13 @@ function initSwipe() {
     sw = new Swipe($el.get(0), {})
         .on('start', startMove)
         .on('move', handleMove)
-        .on('end', endMove) // Notiek tikai, ja ir bijusi valid move
-        .on('touchend', endTouch) // Notiek vienmēr
+        // Notiek, tikai, kad ir bijis valid move
+        //.on('end', endMove) 
+        // Notiek vienmēr. Gadījumā, kad notiek animēšana, lietotājs
+        // pieskaras pie ekrāna, tad apstādinām animāciju
+        // un ja arī nav veicis swipe kustību ļaujam šajā mirklī pabeigt
+        // slide animāciju
+        .on('touchend', endMove) 
 }
 
 function initSlides() {
@@ -45,7 +50,7 @@ function startMove(c) {
     if (stepper.isRunning()) {
         stepper.stop();
     }
-    
+
     slides.start();
     isMoveStarted = true;
 }
@@ -62,16 +67,14 @@ function handleMove(d) {
     slides.setXOffset(d.offset.x);
 }
 
-function endTouch(d) {
-    
-}
-
 function endMove(d) {
     var x = findSlideOffsetX(0, viewportWidth);
 
-    console.log('endmove', x);
-
     if (typeof x == 'undefined') {
+        return;
+    }
+
+    if (!(d.direction == 'right' || d.direction == 'left')) {
         return;
     }
 
@@ -86,33 +89,63 @@ function endMove(d) {
 
     isMoveStarted = false;
 
-    var startProgress = (Math.abs(x) / viewportWidth), p, targetOffset;
+    var startProgress, targetOffset, slideMoveDirection;
 
-    console.log('startprogress', startProgress, d.direction);
+    /**
+     * Nosakām kāds ir slaid iekadrēšanas progress
+     * Ja tiek bīdīts pa labi un ir swipe kustība, tad 
+     * bīdam pa labi un progress ir sākuma
+     * Ja nav swipe, tad tiek slaids bīdīts atpakaļ un progress
+     * ir pretējs
+     */
+    if (d.direction == 'right') {
+        slideMoveDirection = 'right';
 
-    p = startProgress;
-    
-    // Ja pabīdīts mazāk par trešo daļu, tad atpakaļ uz izejas pozīciju
-    if (!d.isSwipe && (startProgress < 0.3333)) {
-        p = 1-p;
-    }
-    
-    stepper.runFrom(p, stepperDuration, stepperCurve, function(progress){
-        
-        // Kalkulējam offset no progress
-        // Ja progress mazāks par pusi, tad ejam atpakaļ uz sākumu
+        startProgress = Math.abs(x) / viewportWidth;
         if (!d.isSwipe && (startProgress < 0.3333)) {
-            targetOffset = viewportWidth - (viewportWidth * progress);
+            startProgress = 1 - startProgress;
+
+            slideMoveDirection = 'left';
         }
-        else {
-            targetOffset = viewportWidth * progress;
+    }
+    else if (d.direction == 'left') {
+        slideMoveDirection = 'right';
+
+        startProgress = Math.abs(x) / viewportWidth;
+        if (d.isSwipe || (startProgress < 0.7777)) {
+            startProgress = 1 - startProgress;
+
+            slideMoveDirection = 'left';
+        }
+    }
+
+
+
+    // Nofiksējam slaidu x pozīcijas
+    /**
+     * @todo slides.start jāpārsauc savādāk
+     */
+    slides.start();
+    
+    //console.log('startprogress', startProgress, d.direction, d.isSwipe ? 'swipe' : 'notswipe');
+    
+    stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
+        
+        // Šis būs tas offset, kurš tiek animēts un kurš ir jāliek klāt slaidam
+        targetOffset = viewportWidth - (progress * viewportWidth);
+
+        // Atkarībā no virziena piekoriģējam offset
+        // Ja bīdām pa labi, tad sākam no 0 līdz targetOffset
+        if (slideMoveDirection == 'right') {
+            targetOffset = (viewportWidth - x) - targetOffset;
+        }
+        else if (slideMoveDirection == 'left') {
+            targetOffset = (x - targetOffset) * -1;
         }
 
-        targetOffset *= d.direction == 'left' ? -1 : 1;
+        //console.log(progress, targetOffset, x, slideMoveDirection);
 
         slides.setXOffset(targetOffset);
-
-
 
     }, function(){
         // Done
