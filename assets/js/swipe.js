@@ -15,6 +15,25 @@ var startPos = 0, offsetX = 0, isMoveStarted = false;
 var stepperCurve = [0,0,.12,1];
 var stepperDuration = 300;
 
+
+var imageIndex = 0;
+var images = [
+    'https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg',
+    'https://c2.staticflickr.com/4/3741/33588515842_b2cdcde4cb.jpg',
+    'https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg',
+    'https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg',
+    'https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg',
+    'https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg',
+    'https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg',
+    'https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg',
+    'https://c1.staticflickr.com/3/2878/33732917345_daaa775e98.jpg',
+    'https://c1.staticflickr.com/3/2835/32886081974_36a9531d7b.jpg',
+    'https://c2.staticflickr.com/4/3804/32895132024_a7679bcc88.jpg',
+    'https://c1.staticflickr.com/3/2858/33577553782_c7db967deb.jpg',
+    'https://c2.staticflickr.com/4/3734/33699026186_436c82bcbc.jpg'
+];
+
+
 function log(message) {
     // $.post('http://webing.local:8080/api/ping/debug', {
     //     description: message
@@ -24,7 +43,7 @@ function log(message) {
 }
 
 function initSwipe() {
-    sw = new Swipe($el.get(0), {})
+    sw = new Swipe($el.get(0), {'direction': 'horizontal'})
         .on('start', startMove)
         .on('move', handleMove)
         // Notiek, tikai, kad ir bijis valid move
@@ -56,6 +75,8 @@ function startMove(c) {
 }
 
 function handleMove(d) {
+    console.log('move', d.direction);
+    
     if (stepper.isRunning()) {
         return;
     }
@@ -69,6 +90,8 @@ function handleMove(d) {
 
 function endMove(d) {
     var x = findSlideOffsetX(0, viewportWidth);
+
+    console.log('endmove', x, d.direction);
 
     if (typeof x == 'undefined') {
         return;
@@ -127,7 +150,7 @@ function endMove(d) {
      */
     slides.start();
     
-    //console.log('startprogress', startProgress, d.direction, d.isSwipe ? 'swipe' : 'notswipe');
+    console.log('startprogress', startProgress, d.direction, d.isSwipe ? 'swipe' : 'notswipe');
     
     stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
         
@@ -153,7 +176,17 @@ function endMove(d) {
 }
 
 function handleSlideAdd(index, el) {
-    $(el).html('Slide '+index)
+    
+    $(el).css({
+        'background-image': 'url('+images[imageIndex]+')',
+        'background-size': 'cover',
+        'background-position': 'center'
+    });
+
+    imageIndex++;
+    if (imageIndex >= images.length) {
+        imageIndex = 0;
+    }
 }
 
 function findSlideOffsetX(start, stop) {

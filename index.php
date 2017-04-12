@@ -12,14 +12,14 @@ $version = $pkg->version;
 </head>
 <body>
     <div class="swipe">
-        <div class="swipe__item">a</div>
-        <div class="swipe__item">b</div>
-        <div class="swipe__item">c</div>
-        <div class="swipe__item">d</div>
-        <div class="swipe__item">e</div>
-        <div class="swipe__item">f</div>
-        <div class="swipe__item">g</div>
-        <div class="swipe__item">h</div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
     </div>
     <script src="build/app.min-<?php echo $version ?>.js"></script>
 </body>
