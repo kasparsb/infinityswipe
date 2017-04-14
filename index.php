@@ -21,6 +21,7 @@ $version = $pkg->version;
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
     </div>
+    
     <script src="build/app.min-<?php echo $version ?>.js"></script>
 </body>
 </html>
