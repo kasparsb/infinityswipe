@@ -11,7 +11,18 @@ $version = $pkg->version;
     <link rel="stylesheet" href="build/app.min-<?php echo $version ?>.css" type='text/css' media='all' />
 </head>
 <body>
-    <div class="swipe">
+    <div class="swipe swipe--1">
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+    </div>
+
+    <div class="swipe swipe--2">
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
