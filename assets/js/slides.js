@@ -1,9 +1,8 @@
 var $ = require('jquery');
 
-var Slides = function(el, conf) {
+var Slides = function($slides, viewportWidth, conf) {
     this.viewport = {
-        el: el,
-        width: $(el).width()
+        width: viewportWidth
     }
 
     // Nākošā slide X pozīcija
@@ -16,15 +15,15 @@ var Slides = function(el, conf) {
         this.slideAddCallbacks.push(conf.onSlideAdd)
     }
 
-    this.prepareSlides();
+    this.prepareSlides($slides);
 }
 
 Slides.prototype = {
 
-    prepareSlides: function() {
+    prepareSlides: function($slides) {
         var mthis = this;
 
-        $(this.viewport.el).find('.swipe__item').each(function(){
+        $slides.each(function(){
             mthis.push(this)
         })
 

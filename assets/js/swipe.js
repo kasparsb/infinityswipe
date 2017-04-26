@@ -3,33 +3,23 @@ var Swipe = require('swipe');
 var Slides = require('./slides');
 var Stepper = require('./stepper');
 
-function createSwipe(el) {
+function createSwipe(el, $slides) {
 
     var slideAddCb;
-    var sw, slides, stepper, viewportWidth;
+    var slides, stepper, viewportWidth;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
-
-    //var stepperCurve = [0,0,1,1]; // linear
-
-    // Šitā kombinācija ir laba
     var stepperCurve = [0,0,.12,1];
     var stepperDuration = 300;
 
     function initSwipe() {
-        sw = new Swipe(el, {'direction': 'horizontal'})
+        new Swipe(el, {'direction': 'horizontal'})
             .on('start', startMove)
             .on('move', handleMove)
-            // Notiek, tikai, kad ir bijis valid move
-            //.on('end', endMove) 
-            // Notiek vienmēr. Gadījumā, kad notiek animēšana, lietotājs
-            // pieskaras pie ekrāna, tad apstādinām animāciju
-            // un ja arī nav veicis swipe kustību ļaujam šajā mirklī pabeigt
-            // slide animāciju
             .on('touchend', endMove) 
     }
 
     function initSlides() {
-        slides = new Slides(el, {
+        slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd
         });
     }
@@ -60,8 +50,16 @@ function createSwipe(el) {
     }
 
     function endMove(d) {
-        var x = findSlideOffsetX(0, viewportWidth);
+        if (!isMoveStarted) {
+            return;
+        }
 
+        isMoveStarted = false;
+
+        snapSlides(d.direction, d.isSwipe, findSlideOffsetXBetween(0, viewportWidth));
+    }
+
+    function snapSlides(direction, isSwipe, x) {
         if (typeof x == 'undefined') {
             return;
         }
@@ -69,12 +67,6 @@ function createSwipe(el) {
         if (stepper.isRunning()) {
             return;
         }
-
-        if (!isMoveStarted) {
-            return;
-        }
-
-        isMoveStarted = false;
 
         var startProgress, targetOffset, slideMoveDirection;
 
@@ -85,21 +77,21 @@ function createSwipe(el) {
          * Ja nav swipe, tad tiek slaids bīdīts atpakaļ un progress
          * ir pretējs
          */
-        if (d.direction == 'right') {
+        if (direction == 'right') {
             slideMoveDirection = 'right';
 
             startProgress = Math.abs(x) / viewportWidth;
-            if (!d.isSwipe && (startProgress < 0.3333)) {
+            if (!isSwipe && (startProgress < 0.3333)) {
                 startProgress = 1 - startProgress;
 
                 slideMoveDirection = 'left';
             }
         }
-        else if (d.direction == 'left') {
+        else if (direction == 'left') {
             slideMoveDirection = 'right';
 
             startProgress = Math.abs(x) / viewportWidth;
-            if (d.isSwipe || (startProgress < 0.7777)) {
+            if (isSwipe || (startProgress < 0.7777)) {
                 startProgress = 1 - startProgress;
 
                 slideMoveDirection = 'left';
@@ -135,7 +127,7 @@ function createSwipe(el) {
         })
     }
 
-    function findSlideOffsetX(start, stop) {
+    function findSlideOffsetXBetween(start, stop) {
         for (var i = 0; i < slides.slides.length; i++) {
             if (slides.slides[i].x > start && slides.slides[i].x < stop) {
                 return slides.slides[i].x;
@@ -144,6 +136,20 @@ function createSwipe(el) {
         return undefined;
     }
 
+    /**
+     * Atrodam nākošo offsetX aiz norādītā x
+     */
+    function findSlideOffsetXNextFrom(x) {
+        var r = undefined;
+        for (var i = 0; i < slides.slides.length; i++) {
+            if (slides.slides[i].x > x) {
+                if (typeof r == 'undefined' || slides.slides[i].x < r) {
+                    r = slides.slides[i].x;
+                }
+            }
+        }
+        return r;
+    }
 
     function handleSlideAdd(index, el) {
         if (slideAddCb) {
@@ -167,15 +173,15 @@ function createSwipe(el) {
             slideAddCb = cb;
         },
         nextSlide: function() {
-            console.log('slidenext', el)
+            snapSlides('left', true, findSlideOffsetXNextFrom(0));
         },
         prevSlide: function() {
-            console.log('slideprev', el)
+            snapSlides('right', true, 0);
         }
     }
 }
 
 
-module.exports = function(el) {
-    return createSwipe(el);
+module.exports = function(el, $slides) {
+    return createSwipe(el, $slides);
 }
