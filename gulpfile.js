@@ -12,9 +12,7 @@ var buffer = require('vinyl-buffer');
 var pkg = require('./package.json');
 
 var files = {
-    js: './assets/js/app.js',
-    less: './assets/less/app.less',
-    lesss: './assets/less/**/*.less',
+    js: './infty.js',
     dest: './build'
 }
 
@@ -27,7 +25,9 @@ function getBrowserify(entry) {
         entries: [entry],
         // These params are for watchify
         cache: {}, 
-        packageCache: {}
+        packageCache: {},
+
+        standalone: 'webit.infinitySwipe'
     })
 }
 
@@ -45,14 +45,14 @@ function bundleJs(browserify, compress) {
         console.log(er.annotated);
     }
 
-    var destFileName = 'app.min-'+pkg.version+'.js';
+    var destFileName = 'infty.min.js';
 
     if (compress) {
         console.log('Uglify js');
         browserify
             .bundle()
             .on('error', handleError)
-            .pipe(source('app.js'))
+            .pipe(source('infty.js'))
             .pipe(buffer())
             .pipe(uglify())
             .pipe(rename(destFileName))
@@ -67,29 +67,6 @@ function bundleJs(browserify, compress) {
             .pipe(gulp.dest(files.dest));    
     }
     
-}
-
-function bundleLess(compress) {
-    if (typeof compress == 'undefined') {
-        compress = true;
-    }
-
-    if (compress) {
-        console.log('Minify css');
-    }
-
-    gulp.src(files.less)
-        .pipe(
-            less({
-                compress: compress
-            })
-                .on('error', function(er){
-                    console.log(er.type+': '+er.message);
-                    console.log(er.filename+':'+er.line);
-                })
-        )
-        .pipe(rename('app.min-'+pkg.version+'.css'))
-        .pipe(gulp.dest(files.dest));
 }
 
 gulp.task('js', function(){
@@ -110,16 +87,6 @@ gulp.task('watchjs', function(){
     w.bundle().on('data', function() {});
 });
 
-gulp.task('less', function(){
-    bundleLess()
-});
 
-gulp.task('watchless', function(){
-    watch([files.lesss], function(){
-        console.log('less files updated');
-        bundleLess(false);
-    });
-});
-
-gulp.task('default', ['watchjs', 'watchless']);
-gulp.task('dist', ['js', 'less']);
+gulp.task('default', ['watchjs']);
+gulp.task('dist', ['js']);

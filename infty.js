@@ -1,7 +1,7 @@
 var $ = require('jquery');
 var Swipe = require('swipe');
+var Stepper = require('stepper');
 var Slides = require('./slides');
-var Stepper = require('./stepper');
 
 function createSwipe(el, $slides) {
 
