@@ -5,7 +5,7 @@ var Slides = require('./slides');
 
 function createSwipe(el, $slides) {
 
-    var slideAddCb;
+    var slideAddCb, changeCb;
     var slides, stepper, viewportWidth;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -123,15 +123,27 @@ function createSwipe(el, $slides) {
             slides.setXOffset(targetOffset);
 
         }, function(){
-            // Done
+            slideSnapTransitionDone();
         })
     }
 
-    function findSlideOffsetXBetween(start, stop) {
+    function slideSnapTransitionDone() {
+        changeCb();
+    }
+
+    function findSlideBetween(start, stop) {
         for (var i = 0; i < slides.slides.length; i++) {
             if (slides.slides[i].x > start && slides.slides[i].x < stop) {
-                return slides.slides[i].x;
+                return slides.slides[i];
             }
+        }
+        return undefined;
+    }
+
+    function findSlideOffsetXBetween(start, stop) {
+        var slide = findSlideBetween(start, stop);
+        if (slide) {
+            return slide.x;
         }
         return undefined;
     }
@@ -172,11 +184,28 @@ function createSwipe(el, $slides) {
         onSlideAdd: function(cb) {
             slideAddCb = cb;
         },
+        onChange: function(cb) {
+            changeCb = cb;
+        },
         nextSlide: function() {
             snapSlides('left', true, findSlideOffsetXNextFrom(0));
         },
         prevSlide: function() {
             snapSlides('right', true, 0);
+        },
+        getCurrent: function() {
+            return findSlideBetween(-1, viewportWidth);
+        },
+        getNext: function() {
+            var s = findSlideBetween(-1, viewportWidth);
+            return slides.getByIndex(s.index+1);
+        },
+        getPrev: function() {
+            var s = findSlideBetween(-1, viewportWidth);
+            return slides.getByIndex(s.index-1);
+        },
+        getSlides: function() {
+            return slides;
         }
     }
 }

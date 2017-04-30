@@ -31,6 +31,19 @@ Slides.prototype = {
     },
 
     /**
+     * Atgriežam slide pēc kārtas numura redzamājā daļā
+     */
+    getByIndex: function(index) {
+        for (var i = 0; i < this.slides.length; i++) {
+            if (this.slides[i].index === index) {
+                return this.slides[i];
+            }
+        }
+
+        return false;
+    },
+
+    /**
      * Pieeja pirmajam slide
      */
     first: function() {
