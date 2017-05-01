@@ -3,7 +3,7 @@ var Swipe = require('swipe');
 var Stepper = require('stepper');
 var Slides = require('./slides');
 
-function createSwipe(el, $slides) {
+function createSwipe(el, $slides, conf) {
 
     var slideAddCb, changeCb;
     var slides, stepper, viewportWidth;
@@ -12,7 +12,7 @@ function createSwipe(el, $slides) {
     var stepperDuration = 300;
 
     function initSwipe() {
-        new Swipe(el, {'direction': 'horizontal'})
+        new Swipe(getSwipeTarget(), {'direction': 'horizontal'})
             .on('start', startMove)
             .on('move', handleMove)
             .on('touchend', endMove) 
@@ -128,7 +128,16 @@ function createSwipe(el, $slides) {
     }
 
     function slideSnapTransitionDone() {
-        changeCb();
+        if (typeof changeCb != 'undefined') {
+            changeCb();
+        }
+    }
+
+    function getSwipeTarget() {
+        if (conf && conf.swipeTarget) {
+            return conf.swipeTarget;
+        }
+        return el;
     }
 
     function findSlideBetween(start, stop) {
@@ -211,6 +220,6 @@ function createSwipe(el, $slides) {
 }
 
 
-module.exports = function(el, $slides) {
-    return createSwipe(el, $slides);
+module.exports = function(el, $slides, conf) {
+    return createSwipe(el, $slides, conf);
 }

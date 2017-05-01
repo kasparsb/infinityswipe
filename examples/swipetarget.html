@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>Swipe target</title>
+    <style>
+        .swipe {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 180px;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .swipe__item {
+            position: absolute;
+
+            box-sizing: border-box;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .swipetarget {
+            max-width: 500px;
+            margin: 12px auto 0;
+            box-sizing: border-box;
+            background: #e2e2e2;
+            border: 2px solid gray;
+            color: gray;
+            text-align: center;
+            height: 180px;
+            line-height: 180px;
+        }
+    </style>
+</head>
+<body>
+    <div class="swipe">
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+    </div>
+
+    <div class="swipetarget">Swipe here</div>
+    
+    <script src="../build/infty.min.js"></script>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        var images = [
+            'https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg',
+            'https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg',
+            'https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg',
+            'https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg',
+            'https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg',
+            'https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg',
+            'https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg'
+        ];
+        var imagesCount = images.length;
+
+        var api = new webit.infinitySwipe(
+            $('.swipe').get(0), 
+            $('.swipe').find('.swipe__item'),
+            {
+                swipeTarget: $('.swipetarget').get(0)
+            }
+        );
+
+        api.onSlideAdd(function(index, el){
+            addImage(index, el);
+        });
+
+        function addImage(index, el){
+            var imageIndex;
+
+            if (index < 0) {
+                // Ņemam slaidu no masīva beigām
+                if (index % imagesCount === 0) {
+                    imageIndex = 0;
+                }
+                else {
+                    imageIndex = imagesCount + (index % imagesCount);    
+                }
+                
+            }
+            else {
+                imageIndex = index % imagesCount;
+            }
+
+            $(el).css({
+                'background-image': 'url('+images[imageIndex]+')',
+                'background-size': 'cover',
+                'background-position': 'center'
+            });
+        }
+    </script>
+</body>
+</html>
