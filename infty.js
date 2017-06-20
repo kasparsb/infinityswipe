@@ -11,6 +11,9 @@ function createSwipe(el, $slides, conf) {
     var stepperCurve = [0,0,.12,1];
     var stepperDuration = 300;
 
+    // Pēc noklusējuma viss ir enbabled, bet ir iespēja uz mirkli atslēgt touch eventus
+    var isEnabled = true;
+
     function initSwipe() {
         new Swipe(getSwipeTarget(), {'direction': 'horizontal'})
             .on('start', startMove)
@@ -29,6 +32,10 @@ function createSwipe(el, $slides, conf) {
     }
 
     function startMove(c) {
+        if (!isEnabled) {
+            return;
+        }
+
         if (stepper.isRunning()) {
             stepper.stop();
         }
@@ -38,6 +45,10 @@ function createSwipe(el, $slides, conf) {
     }
 
     function handleMove(d) {    
+        if (!isEnabled) {
+            return;
+        }
+
         if (stepper.isRunning()) {
             return;
         }
@@ -50,6 +61,10 @@ function createSwipe(el, $slides, conf) {
     }
 
     function endMove(d) {
+        if (!isEnabled) {
+            return;
+        }
+        
         if (!isMoveStarted) {
             return;
         }
@@ -178,6 +193,10 @@ function createSwipe(el, $slides, conf) {
         }
     }
 
+    function setIsEnabled(s) {
+        isEnabled = s;
+    }
+
 
     viewportWidth = $(el).width();
     
@@ -215,6 +234,12 @@ function createSwipe(el, $slides, conf) {
         },
         getSlides: function() {
             return slides;
+        },
+        disable: function() {
+            setIsEnabled(false);
+        },
+        enable: function() {
+            setIsEnabled(true);
         }
     }
 }
