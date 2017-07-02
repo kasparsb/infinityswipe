@@ -15,6 +15,8 @@ var Slides = function($slides, viewportWidth, conf) {
         this.slideAddCallbacks.push(conf.onSlideAdd)
     }
 
+    this.$slides = $slides;
+
     this.prepareSlides($slides);
 }
 
@@ -29,6 +31,11 @@ Slides.prototype = {
 
         this.balanceSlides();
     },
+
+    reset: function() {
+        this.slides = [];
+        this.prepareSlides(this.$slides);
+    },  
 
     /**
      * Atgriežam slide pēc kārtas numura redzamājā daļā

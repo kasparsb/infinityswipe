@@ -83,6 +83,7 @@
     </div>
 
     <div class="navigation">
+        <a href="" class="navigation__nav navigation__restart">Restart</a>
         <a href="" class="navigation__nav navigation__prev">Prev</a>
         <a href="" class="navigation__nav navigation__next">Next</a>
         <a href="" class="navigation__nav navigation__get-current">Get current</a>
@@ -134,12 +135,11 @@
         });
 
         api.onChange(function(){
-            //console.log('changed', api.getCurrent().index);
+            console.log('changed', api.getCurrent().index);
         })
 
         function addImage(index, el){
 
-            console.log('addimage', index, imagesOffset);
             index = index + imagesOffset;
 
             var imageIndex;
@@ -165,12 +165,12 @@
             });
         }
 
-        function renewImages() {
-            var slides = api.getSlides();
-            for (var i = 0; i < slides.slides.length; i++) {
-                addImage(slides.slides[i].index, slides.slides[i].el)
-            }
-        }        
+
+        $(document).on('click', '.navigation__restart', function(ev){
+            ev.preventDefault();
+
+            api.restart();
+        })
 
         $(document).on('click', '.navigation__prev', function(ev){
             ev.preventDefault();
@@ -203,14 +203,10 @@
         })
 
         $(document).on('change', '.navigation__set-x select', function(){
-            
+            var current = api.getCurrent().index;
 
-            imagesOffset = 1;
-            renewImages();
-
-            
-
-            console.log(api.getCurrent().index % imagesCount, $(this).val());
+            console.log('imagescount', imagesCount);
+            console.log('setx', api.getCurrent().index, api.getCurrent().index % imagesCount);
         })
     </script>
 </body>

@@ -215,11 +215,17 @@ function createSwipe(el, $slides, conf) {
         onChange: function(cb) {
             changeCb = cb;
         },
+        restart: function() {
+            slides.reset();
+        },
         nextSlide: function() {
             snapSlides('left', true, findSlideOffsetXNextFrom(0));
         },
         prevSlide: function() {
             snapSlides('right', true, 0);
+        },
+        showSlide: function(index) {
+
         },
         getCurrent: function() {
             return findSlideBetween(-1, viewportWidth);
