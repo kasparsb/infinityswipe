@@ -26,6 +26,7 @@ Slides.prototype = {
         var mthis = this;
 
         $slides.each(function(){
+            
             mthis.push(this)
         })
 
@@ -35,7 +36,24 @@ Slides.prototype = {
     reset: function() {
         this.slides = [];
         this.prepareSlides(this.$slides);
-    },  
+    },
+
+    showByIndex: function(index) {
+        this.slides = [];
+
+        var mthis = this;
+
+        this.$slides.each(function(i){
+            if (i == 0) {
+                mthis.pushWithIndex(this, index)
+            }
+            else {
+                mthis.push(this)
+            }
+        })
+
+        this.balanceSlides();
+    },
 
     /**
      * Atgriežam slide pēc kārtas numura redzamājā daļā
@@ -160,17 +178,19 @@ Slides.prototype = {
      * Pievienojam slide masīva beigās
      */
     push: function(el) {
-        
+        this.pushWithIndex(el, this.nextIndex());
+    },
+
+    pushWithIndex: function(el, index) {
         this.slidesCount = this.slides.push({
             el: el,
-            index: this.nextIndex(),
+            index: index,
             x: this.nextX(),
             startX: this.nextStartX(),
             width: $(el).outerWidth()
         });
 
         this.setX(el, this.last().x);
-
 
         this.executeSlideAddCallbacks(this.last().index, this.last().el);
     },

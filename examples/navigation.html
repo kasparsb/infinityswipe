@@ -7,7 +7,7 @@
     <style>
         .swipe {
             max-width: 500px;
-            height: 180px;
+            height: 280px;
             position: relative;
             box-sizing: border-box;
 
@@ -72,14 +72,7 @@
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
-        <div class="swipe__item"></div>
+        
     </div>
 
     <div class="navigation">
@@ -113,7 +106,6 @@
             // 'https://c2.staticflickr.com/4/3734/33699026186_436c82bcbc.jpg'
         ];
         var imagesCount = images.length;
-        var imagesOffset = 0;
 
         // Izvadām preview
         for (var i = 0; i < imagesCount; i++) {
@@ -139,9 +131,7 @@
         })
 
         function addImage(index, el){
-
-            index = index + imagesOffset;
-
+            console.log('add', index);
             var imageIndex;
 
             if (index < 0) {
@@ -202,11 +192,10 @@
             console.log(api.getNext());
         })
 
-        $(document).on('change', '.navigation__set-x select', function(){
-            var current = api.getCurrent().index;
-
-            console.log('imagescount', imagesCount);
-            console.log('setx', api.getCurrent().index, api.getCurrent().index % imagesCount);
+        $(document).on('change', '.navigation__set-x select', function(ev){
+            
+            console.log('setx', parseInt(ev.target.value, 10))
+            api.showSlide(parseInt(ev.target.value, 10))
         })
     </script>
 </body>

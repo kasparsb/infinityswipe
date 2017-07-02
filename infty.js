@@ -225,7 +225,7 @@ function createSwipe(el, $slides, conf) {
             snapSlides('right', true, 0);
         },
         showSlide: function(index) {
-
+            slides.showByIndex(index);
         },
         getCurrent: function() {
             return findSlideBetween(-1, viewportWidth);
