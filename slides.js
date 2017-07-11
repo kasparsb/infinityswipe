@@ -38,6 +38,10 @@ Slides.prototype = {
         this.prepareSlides(this.$slides);
     },
 
+    setViewportWidth: function(width) {
+        this.viewport.width = width;
+    },
+
     showByIndex: function(index) {
         this.slides = [];
 
@@ -224,6 +228,11 @@ Slides.prototype = {
     },
 
     balanceSlides: function() {
+        // Balansējam tikai, ja viewport.width > 0
+        if (this.viewport.width <= 0) {
+            return;
+        }
+
         // Pārbaudām vai aiz viewport nav par maz slaidu
         while (this.slidesCountAfterViewport() <= 1) {
             // Pirmo no kreisās puses pārliekam uz beigām

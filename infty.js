@@ -6,7 +6,7 @@ var Slides = require('./slides');
 function createSwipe(el, $slides, conf) {
 
     var slideAddCb, changeCb;
-    var slides, stepper, viewportWidth;
+    var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
     var stepperDuration = 300;
@@ -197,12 +197,17 @@ function createSwipe(el, $slides, conf) {
         isEnabled = s;
     }
 
+    function handleResize() {
+        viewportWidth = $(el).width();
+        if (slides) {
+            slides.setViewportWidth(viewportWidth);
+        }
+    }
 
-    viewportWidth = $(el).width();
-    
     // Liekam timeout, lai izpildās nākamajā scope
     // Vajag, lai izsaucošais kods var uzlikt onSlideAdd pirms tam
     setTimeout(function(){
+        handleResize();
         initSwipe();
         initSlides();
         initStepper();
@@ -246,6 +251,9 @@ function createSwipe(el, $slides, conf) {
         },
         enable: function() {
             setIsEnabled(true);
+        },
+        resize: function() {
+            handleResize();
         }
     }
 }
