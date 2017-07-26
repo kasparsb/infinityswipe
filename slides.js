@@ -42,6 +42,42 @@ Slides.prototype = {
         this.viewport.width = width;
     },
 
+    resize: function() {
+
+        // Update slides width
+        for (var i = 0; i < this.slides.length; i++) {
+            this.slides[i].width = $(this.slides[i].el).outerWidth();
+        }
+
+        // Update slide x visiem, kur ir pa labi no ekrāna malas. Pozītīvs x
+        var lastX = 0;
+        for (var i = 0; i < this.slides.length; i++) {
+            if (this.slides[i].x < 0) {
+                continue;
+            }
+
+            this.slides[i].x = lastX;
+            this.slides[i].startX = lastX;
+            this.setX(this.slides[i].el, lastX);
+
+            lastX += this.slides[i].width;
+        }
+
+        // Update visus, kas ir pa kreisi no ekrāna malas. Negatīvs x
+        lastX = 0;
+        for (var i = this.slides.length-1; i >= 0; i--) {
+            if (this.slides[i].x >= 0) {
+                continue;
+            }
+
+            lastX -= this.slides[i].width;
+
+            this.slides[i].x = lastX;
+            this.slides[i].startX = lastX;
+            this.setX(this.slides[i].el, lastX);
+        }
+    },
+
     showByIndex: function(index) {
         this.slides = [];
 

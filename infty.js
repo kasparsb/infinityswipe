@@ -201,6 +201,7 @@ function createSwipe(el, $slides, conf) {
         viewportWidth = $(el).width();
         if (slides) {
             slides.setViewportWidth(viewportWidth);
+            slides.resize();
         }
     }
 
