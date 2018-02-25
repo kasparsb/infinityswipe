@@ -67,20 +67,20 @@
         ];
         var imagesCount = images.length;
 
-        // Izvadām preview
-        for (var i = 0; i < imagesCount; i++) {
-            $('.preview').append(
-                $('<div class="preview__item" />').append(
-                    $('<img class="preview__img" />').attr('src', images[i])
-                )
-            )
+        // // Izvadām preview
+        // for (var i = 0; i < imagesCount; i++) {
+        //     $('.preview').append(
+        //         $('<div class="preview__item" />').append(
+        //             $('<img class="preview__img" />').attr('src', images[i])
+        //         )
+        //     )
 
-            $('.navigation__set-x select').append(
-                $('<option />').val(i).html(i)
-            )
-        }
+        //     $('.navigation__set-x select').append(
+        //         $('<option />').val(i).html(i)
+        //     )
+        // }
 
-        var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item'));
+        var api = new webit.infinitySwipe(document.querySelector('.swipe'), document.querySelectorAll('.swipe__item'));
 
         api.onSlideAdd(function(index, el){
             addImage(index, el);
@@ -103,11 +103,9 @@
                 imageIndex = index % imagesCount;
             }
 
-            $(el).css({
-                'background-image': 'url('+images[imageIndex]+')',
-                'background-size': 'cover',
-                'background-position': 'center'
-            });
+            el.style.backgroundImage = 'url('+images[imageIndex]+')';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
         }
 
 
