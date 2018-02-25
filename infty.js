@@ -1,7 +1,7 @@
-var $ = require('jquery');
 var Swipe = require('swipe');
 var Stepper = require('stepper');
 var Slides = require('./slides');
+var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
 
@@ -198,7 +198,7 @@ function createSwipe(el, $slides, conf) {
     }
 
     function handleResize() {
-        viewportWidth = $(el).width();
+        viewportWidth = getElementDimensions(el).width;
         if (slides) {
             slides.setViewportWidth(viewportWidth);
             slides.resize();

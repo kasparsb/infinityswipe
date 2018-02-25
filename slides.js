@@ -1,6 +1,7 @@
-var $ = require('jquery');
+var getElementOuterDimensions = require('./getElementOuterDimensions');
+var elementsCollection = require('./elementsCollection');
 
-var Slides = function($slides, viewportWidth, conf) {
+var Slides = function(slides, viewportWidth, conf) {
     this.viewport = {
         width: viewportWidth
     }
@@ -15,19 +16,19 @@ var Slides = function($slides, viewportWidth, conf) {
         this.slideAddCallbacks.push(conf.onSlideAdd)
     }
 
-    this.$slides = $slides;
+    this.slidesElements = new elementsCollection(slides);
 
-    this.prepareSlides($slides);
+    this.prepareSlides(this.slidesElements);
 }
 
 Slides.prototype = {
 
-    prepareSlides: function($slides) {
+    prepareSlides: function(slides) {
         var mthis = this;
 
-        $slides.each(function(){
+        slides.each(function(slide){
             
-            mthis.push(this)
+            mthis.push(slide)
         })
 
         this.balanceSlides();
@@ -35,7 +36,7 @@ Slides.prototype = {
 
     reset: function() {
         this.slides = [];
-        this.prepareSlides(this.$slides);
+        this.prepareSlides(this.slidesElements);
     },
 
     setViewportWidth: function(width) {
@@ -46,7 +47,7 @@ Slides.prototype = {
 
         // Update slides width
         for (var i = 0; i < this.slides.length; i++) {
-            this.slides[i].width = $(this.slides[i].el).outerWidth();
+            this.slides[i].width = getElementOuterDimensions(this.slides[i].el).width;
         }
 
         // Update slide x visiem, kur ir pa labi no ekrāna malas. Pozītīvs x
@@ -83,12 +84,12 @@ Slides.prototype = {
 
         var mthis = this;
 
-        this.$slides.each(function(i){
+        this.slidesElements.each(function(slide, i){
             if (i == 0) {
-                mthis.pushWithIndex(this, index)
+                mthis.pushWithIndex(slide, index)
             }
             else {
-                mthis.push(this)
+                mthis.push(slide)
             }
         })
 
@@ -204,9 +205,9 @@ Slides.prototype = {
         this.slidesCount = this.slides.unshift({
             el: el,
             index: this.first().index - 1,
-            x: this.first().x - $(el).outerWidth(),
-            startX: this.first().startX - $(el).outerWidth(),
-            width: $(el).outerWidth()
+            x: this.first().x - getElementOuterDimensions(el).width,
+            startX: this.first().startX - getElementOuterDimensions(el).width,
+            width: getElementOuterDimensions(el).width
         });
 
         this.setX(el, this.first().x);
@@ -227,7 +228,7 @@ Slides.prototype = {
             index: index,
             x: this.nextX(),
             startX: this.nextStartX(),
-            width: $(el).outerWidth()
+            width: getElementOuterDimensions(el).width
         });
 
         this.setX(el, this.last().x);
