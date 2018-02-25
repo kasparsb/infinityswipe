@@ -270,6 +270,12 @@ Slides.prototype = {
             return;
         }
 
+        /**
+         * @todo Uzlabot balansēšanu, lai gadījumā ir maz slide elementu,
+         * tad lai viens no slaidiem netiek visu laiku mētās no sākuma uz 
+         * beigām un otrādi
+         */
+
         // Pārbaudām vai aiz viewport nav par maz slaidu
         while (this.slidesCountAfterViewport() <= 1) {
             // Pirmo no kreisās puses pārliekam uz beigām
