@@ -277,13 +277,13 @@ Slides.prototype = {
          */
 
         // Pārbaudām vai aiz viewport nav par maz slaidu
-        while (this.slidesCountAfterViewport() <= 1) {
+        while (this.slidesCountAfterViewport() < 1) {
             // Pirmo no kreisās puses pārliekam uz beigām
             this.push(this.shift().el);
         }
 
         // Pārbaudām vai pirms viewport nav par maz slaidu
-        while (this.slidesCountBeforeViewport() <= 1) {
+        while (this.slidesCountBeforeViewport() < 1) {
             this.unshift(this.pop().el);
         }
     },
