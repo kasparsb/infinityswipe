@@ -69,12 +69,25 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
-        isMoveStarted = false;
+        isMoveStarted = false;        
 
-        snapSlides(d.direction, d.isSwipe, findSlideOffsetXBetween(0, viewportWidth));
+        snapSlides(
+            d.direction, 
+            findSlideOffsetXBetween(0, viewportWidth), 
+            d.isSwipe, 
+            d.touchedElement ? true : false
+        );
     }
 
-    function snapSlides(direction, isSwipe, x) {
+    /**
+     * Nofiksējam slides norādītajā virzienā
+     * @param string Virziens, kurā jānofiksē slides
+     * @param number Offset
+     * @param boolean Vai bija pilnīga swipe kustība. 
+     * Lietotājs apzināti taisīja swipe pa labi vai kreisi
+     * @param boolean Vai nofiksēšanu izraisīja touch notikums
+     */
+    function snapSlides(direction, x, isSwipe, isTouch) {
         if (typeof x == 'undefined') {
             return;
         }
@@ -138,13 +151,16 @@ function createSwipe(el, $slides, conf) {
             slides.setXOffset(targetOffset);
 
         }, function(){
-            slideSnapTransitionDone();
+            slideSnapTransitionDone({
+                isSwipe: isSwipe, 
+                isTouch: isTouch
+            });
         })
     }
 
-    function slideSnapTransitionDone() {
+    function slideSnapTransitionDone(params) {
         if (typeof changeCb != 'undefined') {
-            changeCb();
+            changeCb(params);
         }
     }
 
@@ -225,10 +241,10 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         nextSlide: function() {
-            snapSlides('left', true, findSlideOffsetXNextFrom(0));
+            snapSlides('left', findSlideOffsetXNextFrom(0), true, false);
         },
         prevSlide: function() {
-            snapSlides('right', true, 0);
+            snapSlides('right', 0, true, false);
         },
         showSlide: function(index) {
             slides.showByIndex(index);
