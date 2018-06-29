@@ -130,6 +130,10 @@
             console.log('changed', api.getCurrent().index);
         })
 
+        api.onSlideMove(function(progress, direction){
+            console.log(progress, direction);
+        })
+
         function addImage(index, el){
             console.log('add', index);
             var imageIndex;
