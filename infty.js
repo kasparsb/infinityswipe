@@ -5,7 +5,7 @@ var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
 
-    var slideAddCb, changeCb;
+    var slideAddCb, changeCb, slideMoveCb = function(){};
     var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -57,6 +57,9 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
+        
+        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction);    
+        
         slides.setXOffset(d.offset.x);
     }
 
@@ -135,7 +138,7 @@ function createSwipe(el, $slides, conf) {
         slides.start();
         
         stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
-            
+
             // Šis būs tas offset, kurš tiek animēts un kurš ir jāliek klāt slaidam
             targetOffset = viewportWidth - (progress * viewportWidth);
 
@@ -147,6 +150,35 @@ function createSwipe(el, $slides, conf) {
             else if (slideMoveDirection == 'left') {
                 targetOffset = (x - targetOffset) * -1;
             }
+
+            
+
+
+            /**
+             * slideMoveCb padodam user izvēlēto kustību
+             * Kad slide atnāk atpakaļ savā vietā dēļ nepietiekamas
+             * kustības, tad lai movecb simulētu tā it kā lietotājs pats
+             * atbīdīja atpakaļ
+             */
+            if (slideMoveDirection == 'right') {
+                if (direction == 'right') {
+                    slideMoveCb(progress, direction);
+                }
+                else {
+                    slideMoveCb(1-progress, direction);
+                }
+            }
+            else {
+                if (direction == 'right') {
+                    slideMoveCb(1-progress, direction);
+                }
+                else {
+                    slideMoveCb(progress, direction);
+                }
+            }
+
+
+            
 
             slides.setXOffset(targetOffset);
 
@@ -236,6 +268,13 @@ function createSwipe(el, $slides, conf) {
         },
         onChange: function(cb) {
             changeCb = cb;
+        },
+        /**
+         * Slide kustība. Lai var slide kustību sinhronizēt
+         * ar kādu citu elementu
+         */
+        onSlideMove: function(cb) {
+            slideMoveCb = cb
         },
         restart: function() {
             slides.reset();
