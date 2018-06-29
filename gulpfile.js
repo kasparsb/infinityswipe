@@ -13,7 +13,9 @@ var pkg = require('./package.json');
 
 var files = {
     js: './infty.js',
-    dest: './build'
+    dest: './build',
+
+    destJs: 'infty.min.js'
 }
 
 /**
@@ -45,28 +47,17 @@ function bundleJs(browserify, compress) {
         console.log(er.annotated);
     }
 
-    var destFileName = 'infty.min.js';
+    var brPipe = browserify
+            .bundle()
+            .on('error', handleError)
+            .pipe(source(files.destJs));
 
     if (compress) {
         console.log('Uglify js');
-        browserify
-            .bundle()
-            .on('error', handleError)
-            .pipe(source('infty.js'))
-            .pipe(buffer())
-            .pipe(uglify())
-            .pipe(rename(destFileName))
-            .pipe(gulp.dest(files.dest));
-    }
-    else {
-        browserify
-            .bundle()
-            .on('error', handleError)
-            .pipe(source('app.js'))
-            .pipe(rename(destFileName))
-            .pipe(gulp.dest(files.dest));    
+        brPipe = brPipe.pipe(buffer()).pipe(uglify());       
     }
     
+    brPipe.pipe(gulp.dest(files.dest));
 }
 
 gulp.task('js', function(){
