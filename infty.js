@@ -24,18 +24,7 @@ function createSwipe(el, $slides, conf) {
     function initSlides() {
         slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd,
-            slidesPadding: function() {
-                if (conf && typeof conf.slidesPadding != 'undefined') {
-                    if (typeof conf.slidesPadding == 'function') {
-                        return conf.slidesPadding();
-                    }
-                    else {
-                        return conf.slidesPadding;
-                    }
-                }
-
-                return 0;
-            }
+            slidesPadding: getSlidesPadding
         });
     }
 
@@ -113,6 +102,8 @@ function createSwipe(el, $slides, conf) {
 
         var startProgress, targetOffset, slideMoveDirection;
 
+        var vpw = viewportWidth;
+
         /**
          * Nosakām kāds ir slaid iekadrēšanas progress
          * Ja tiek bīdīts pa labi un ir swipe kustība, tad 
@@ -123,7 +114,15 @@ function createSwipe(el, $slides, conf) {
         if (direction == 'right') {
             slideMoveDirection = 'right';
 
-            startProgress = Math.abs(x) / viewportWidth;
+            /**
+             * @todo Šito vēl kārtīgi pādomāt
+             * Pašlaik liekam, klāt jo pēdējais slide iet ar padding ārpus
+             * viewport width, tāpēc, kad animē visu uz prev vierzienu, tad
+             * jāņēm vērā šis padding, ja nē, tad slides pozicionējas ar nobīdi
+             */
+            vpw += getSlidesPadding();
+
+            startProgress = Math.abs(x) / vpw;
             if (!isSwipe && (startProgress < 0.3333)) {
                 startProgress = 1 - startProgress;
 
@@ -133,7 +132,7 @@ function createSwipe(el, $slides, conf) {
         else if (direction == 'left') {
             slideMoveDirection = 'right';
 
-            startProgress = Math.abs(x) / viewportWidth;
+            startProgress = Math.abs(x) / vpw;
             if (isSwipe || (startProgress < 0.7777)) {
                 startProgress = 1 - startProgress;
 
@@ -152,12 +151,12 @@ function createSwipe(el, $slides, conf) {
         stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
 
             // Šis būs tas offset, kurš tiek animēts un kurš ir jāliek klāt slaidam
-            targetOffset = viewportWidth - (progress * viewportWidth);
+            targetOffset = vpw - (progress * vpw);
 
             // Atkarībā no virziena piekoriģējam offset
             // Ja bīdām pa labi, tad sākam no 0 līdz targetOffset
             if (slideMoveDirection == 'right') {
-                targetOffset = (viewportWidth - x) - targetOffset;
+                targetOffset = (vpw - x) - targetOffset;
             }
             else if (slideMoveDirection == 'left') {
                 targetOffset = (x - targetOffset) * -1;
@@ -213,6 +212,19 @@ function createSwipe(el, $slides, conf) {
             return conf.swipeTarget;
         }
         return el;
+    }
+
+    function getSlidesPadding() {
+        if (conf && typeof conf.slidesPadding != 'undefined') {
+            if (typeof conf.slidesPadding == 'function') {
+                return conf.slidesPadding();
+            }
+            else {
+                return conf.slidesPadding;
+            }
+        }
+
+        return 0;
     }
 
     function findSlideBetween(start, stop) {
