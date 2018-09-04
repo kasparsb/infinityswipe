@@ -2,22 +2,23 @@ var getElementOuterDimensions = require('./getElementOuterDimensions');
 var elementsCollection = require('./elementsCollection');
 
 var Slides = function(slides, viewportWidth, conf) {
-    this.viewport = {
-        width: viewportWidth
-    }
+    this.viewport = {}
 
     // Nākošā slide X pozīcija
     this.slidesCount = 0;
 
     this.slides = [];
 
+    this.conf = conf;
+
     this.slideAddCallbacks = [];
-    if (conf && conf.onSlideAdd) {
-        this.slideAddCallbacks.push(conf.onSlideAdd)
+    if (this.conf && this.conf.onSlideAdd) {
+        this.slideAddCallbacks.push(this.conf.onSlideAdd)
     }
 
     this.slidesElements = new elementsCollection(slides);
 
+    this.setViewportWidth(viewportWidth);
     this.prepareSlides(this.slidesElements);
 }
 
@@ -61,7 +62,8 @@ Slides.prototype = {
             this.slides[i].startX = lastX;
             this.setX(this.slides[i].el, lastX);
 
-            lastX += this.slides[i].width;
+            // todo pielikt padding
+            lastX += (this.slides[i].width + this.getSlidesPadding());
         }
 
         // Update visus, kas ir pa kreisi no ekrāna malas. Negatīvs x
@@ -71,7 +73,8 @@ Slides.prototype = {
                 continue;
             }
 
-            lastX -= this.slides[i].width;
+            // todo atņemt padding
+            lastX -= (this.slides[i].width + this.getSlidesPadding());
 
             this.slides[i].x = lastX;
             this.slides[i].startX = lastX;
@@ -137,7 +140,7 @@ Slides.prototype = {
 
     nextX: function() {
         if (this.last()) {
-            return this.last().x + this.last().width;
+            return this.last().x + this.last().width + this.getSlidesPadding();
         }
 
         return 0;
@@ -145,7 +148,7 @@ Slides.prototype = {
 
     nextStartX: function() {
         if (this.last()) {
-            return this.last().startX + this.last().width;
+            return this.last().startX + this.last().width + this.getSlidesPadding();
         }
 
         return 0;
@@ -205,8 +208,8 @@ Slides.prototype = {
         this.slidesCount = this.slides.unshift({
             el: el,
             index: this.first().index - 1,
-            x: this.first().x - getElementOuterDimensions(el).width,
-            startX: this.first().startX - getElementOuterDimensions(el).width,
+            x: this.first().x - (getElementOuterDimensions(el).width + this.getSlidesPadding()),
+            startX: this.first().startX - (getElementOuterDimensions(el).width + this.getSlidesPadding()),
             width: getElementOuterDimensions(el).width
         });
 
@@ -292,6 +295,10 @@ Slides.prototype = {
         for (var i = 0; i < this.slideAddCallbacks.length; i++) {
             this.slideAddCallbacks[i].apply(this, arguments);
         }
+    },
+
+    getSlidesPadding: function() {
+        return this.conf.slidesPadding();
     }
 }
 

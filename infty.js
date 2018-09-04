@@ -23,7 +23,19 @@ function createSwipe(el, $slides, conf) {
 
     function initSlides() {
         slides = new Slides($slides, viewportWidth, {
-            onSlideAdd: handleSlideAdd
+            onSlideAdd: handleSlideAdd,
+            slidesPadding: function() {
+                if (conf && typeof conf.slidesPadding != 'undefined') {
+                    if (typeof conf.slidesPadding == 'function') {
+                        return conf.slidesPadding();
+                    }
+                    else {
+                        return conf.slidesPadding;
+                    }
+                }
+
+                return 0;
+            }
         });
     }
 
@@ -247,6 +259,7 @@ function createSwipe(el, $slides, conf) {
 
     function handleResize() {
         viewportWidth = getElementDimensions(el).width;
+
         if (slides) {
             slides.setViewportWidth(viewportWidth);
             slides.resize();
