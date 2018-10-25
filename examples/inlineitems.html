@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>Navigation</title>
+    <style>
+        .swipe {
+            max-width: 500px;
+            height: 280px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid green;
+            margin: 0 auto;
+
+            position: relative;
+            overflow: hidden;
+            flex: 1 1 auto;
+        }
+
+        .swipe__items {
+            display: flex;
+            align-items: stretch;
+            height: 100%;
+            border:2px solid blue;
+        }
+
+        .swipe__item1 {
+            width: 30%;
+            flex: 0 0 auto;
+        }
+
+        .swipe__item2 {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            
+            background-size: cover;
+            background-position: center;
+            
+        }
+        
+    </style>
+</head>
+<body>
+    <div style="display: flex;flex-wrap: wrap;align-items: center">
+        <div class="swipe">
+            <div class="swipe__items">
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../build/infty.min.js"></script>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        
+
+        var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item2'));
+        
+        api.onChange(function(){
+            console.log('changed', api.getCurrent().index);
+        })
+
+
+    </script>
+</body>
+</html>

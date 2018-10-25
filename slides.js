@@ -229,8 +229,10 @@ Slides.prototype = {
         this.slidesCount = this.slides.push({
             el: el,
             index: index,
-            x: this.nextX(),
-            startX: this.nextStartX(),
+            // x: this.nextX(),
+            // startX: this.nextStartX(),
+            x: 0,
+            startX: 0,
             width: getElementOuterDimensions(el).width
         });
 
@@ -268,6 +270,10 @@ Slides.prototype = {
     },
 
     balanceSlides: function() {
+
+        return;
+
+
         // Balansējam tikai, ja viewport.width > 0
         if (this.viewport.width <= 0) {
             return;
