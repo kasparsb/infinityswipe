@@ -14,10 +14,11 @@ function getElementDimensions(el) {
     var paddingVertical = getStyleDimensions(s, 'padding-top') + getStyleDimensions(s, 'padding-bottom');
 
     if (typeof el.getBoundingClientRect != 'undefined') {
-        if (typeof el.getBoundingClientRect().width != 'undefined' && typeof el.getBoundingClientRect().height != 'undefined') {
+        var rect = el.getBoundingClientRect();
+        if (typeof rect.width != 'undefined' && typeof rect.height != 'undefined') {
             return {
-                width: el.getBoundingClientRect().width - borderHorizontal - paddingHorizontal,
-                height: el.getBoundingClientRect().height - borderVertical - paddingVertical
+                width: rect.width - borderHorizontal - paddingHorizontal,
+                height: rect.height - borderVertical - paddingVertical
             }
         }
     }

@@ -73,11 +73,24 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
-        isMoveStarted = false;        
+        isMoveStarted = false;
+
+        var x;
+        // Ja direction left, tad tuvāko slide labajai malai
+        if (d.direction == 'left') {
+            x = findFirstSlideOffsetXBetween(0, viewportWidth)
+        }
+        else {
+            x = findLastSlideOffsetXBetween(0, viewportWidth)
+        }
+
+        console.log('asdasd', d.direction, x);
 
         snapSlides(
             d.direction, 
-            findSlideOffsetXBetween(0, viewportWidth), 
+            
+            x, 
+
             d.isSwipe, 
             d.touchedElement ? true : false
         );
@@ -99,6 +112,8 @@ function createSwipe(el, $slides, conf) {
         if (stepper.isRunning()) {
             return;
         }
+
+        console.log('snapSlides', x);
 
         var startProgress, targetOffset, slideMoveDirection;
 
@@ -227,19 +242,45 @@ function createSwipe(el, $slides, conf) {
         return 0;
     }
 
-    function findSlideBetween(start, stop) {
-        for (var i = 0; i < slides.slides.length; i++) {
-            if (slides.slides[i].x > start && slides.slides[i].x < stop) {
-                return slides.slides[i];
+    function getSlideOffsetX(slide) {
+        return slide.realX + slide.x;
+    }
+
+    /**
+     * @searchDirection meklēšanas virziens ASC vai DESC
+     */
+    function findSlideBetween(start, stop, searchDirection) {
+
+        if (searchDirection == 'asc') {
+            for (var i = 0; i < slides.slides.length; i++) {
+                if (getSlideOffsetX(slides.slides[i]) > start && getSlideOffsetX(slides.slides[i]) < stop) {
+                    return slides.slides[i];
+                }
             }
+        }
+        else {
+            for (var i = slides.slides.length-1; i >= 0; i--) {
+                if (getSlideOffsetX(slides.slides[i]) > start && getSlideOffsetX(slides.slides[i]) < stop) {
+                    return slides.slides[i];
+                }
+            }   
+        }
+        
+        return undefined;
+    }
+
+    function findFirstSlideOffsetXBetween(start, stop) {
+        var slide = findSlideBetween(start, stop, 'asc');
+        if (slide) {
+            return getSlideOffsetX(slide);
         }
         return undefined;
     }
 
-    function findSlideOffsetXBetween(start, stop) {
-        var slide = findSlideBetween(start, stop);
+    function findLastSlideOffsetXBetween(start, stop) {
+        var slide = findSlideBetween(start, stop, 'desc');
         if (slide) {
-            return slide.x;
+            return getSlideOffsetX(slide);
         }
         return undefined;
     }
@@ -314,14 +355,14 @@ function createSwipe(el, $slides, conf) {
             slides.showByIndex(index);
         },
         getCurrent: function() {
-            return findSlideBetween(-1, viewportWidth);
+            return findSlideBetween(-1, viewportWidth, 'asc');
         },
         getNext: function() {
-            var s = findSlideBetween(-1, viewportWidth);
+            var s = findSlideBetween(-1, viewportWidth, 'asc');
             return slides.getByIndex(s.index+1);
         },
         getPrev: function() {
-            var s = findSlideBetween(-1, viewportWidth);
+            var s = findSlideBetween(-1, viewportWidth, 'asc');
             return slides.getByIndex(s.index-1);
         },
         getSlides: function() {

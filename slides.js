@@ -27,12 +27,28 @@ Slides.prototype = {
     prepareSlides: function(slides) {
         var mthis = this;
 
+        /**
+         * Ja ir absolūti pozicionēti elementi, visi viens virs
+         * otra, tad šeit nopozicionējam vienu aiz otra
+         */
+        if (0) {
+            this.positionItems();    
+        }
+        
+
         slides.each(function(slide){
             
             mthis.push(slide)
         })
 
         this.balanceSlides();
+    },
+
+    /**
+     * Izkārtojam absolūti pozicionētos elementis vienu aiz otra
+     */
+    positionItems: function() {
+
     },
 
     reset: function() {
@@ -45,6 +61,8 @@ Slides.prototype = {
     },
 
     resize: function() {
+
+        return;
 
         // Update slides width
         for (var i = 0; i < this.slides.length; i++) {
@@ -154,6 +172,14 @@ Slides.prototype = {
         return 0;
     },
 
+    nextRealX: function() {
+        if (this.last()) {
+            return this.last().realX + this.last().width + this.getSlidesPadding();
+        }
+
+        return 0;
+    },
+
     /**
      * Saskaitām cik elementu ir ārpus viewport no labās puses
      */ 
@@ -229,11 +255,14 @@ Slides.prototype = {
         this.slidesCount = this.slides.push({
             el: el,
             index: index,
-            // x: this.nextX(),
-            // startX: this.nextStartX(),
+            width: getElementOuterDimensions(el, true).width,
+
+            // Starta x viesiem ir 0, jo šajā mirklī elementiem jābūt izkārtotiem
             x: 0,
             startX: 0,
-            width: getElementOuterDimensions(el).width
+
+            // Saglabājam reālo x pozīciju
+            realX: this.nextRealX()
         });
 
         this.setX(el, this.last().x);

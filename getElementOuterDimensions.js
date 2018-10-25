@@ -15,10 +15,11 @@ function getElementOuterDimensions(el, includeMargin) {
     }
 
     if (typeof el.getBoundingClientRect != 'undefined') {
-        if (typeof el.getBoundingClientRect().width != 'undefined' && typeof el.getBoundingClientRect().height != 'undefined') {
+        var rect = el.getBoundingClientRect();
+        if (typeof rect.width != 'undefined' && typeof rect.height != 'undefined') {
             return {
-                width: el.getBoundingClientRect().width + marginHorizontal,
-                height: el.getBoundingClientRect().height + marginVertical,
+                width: rect.width + marginHorizontal,
+                height: rect.height + marginVertical,
 
                 marginH: marginHorizontal,
                 marginV: marginVertical

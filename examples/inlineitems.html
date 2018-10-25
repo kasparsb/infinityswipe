@@ -5,28 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
     <title>Navigation</title>
     <style>
+        body, html {
+            padding: 0;
+            margin: 0;
+        }
         .swipe {
             max-width: 500px;
             height: 280px;
-            padding: 10px;
             box-sizing: border-box;
-            border: 1px solid green;
             margin: 0 auto;
 
+            border: 1px solid red;
+
             position: relative;
-            overflow: hidden;
             flex: 1 1 auto;
+
+            overflow: hidden;
         }
 
         .swipe__items {
             display: flex;
             align-items: stretch;
             height: 100%;
-            border:2px solid blue;
         }
 
         .swipe__item1 {
-            width: 30%;
+            width: 160px;
+            margin-right: 5px;
+            
+
             flex: 0 0 auto;
         }
 
@@ -43,7 +50,7 @@
     </style>
 </head>
 <body>
-    <div style="display: flex;flex-wrap: wrap;align-items: center">
+    <div style="display: flex;flex-wrap: wrap;align-items: center;padding:10px">
         <div class="swipe">
             <div class="swipe__items">
                 <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg)"></div></div>
@@ -63,10 +70,10 @@
     <script>
         
 
-        var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item2'));
+        var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item1'));
         
         api.onChange(function(){
-            console.log('changed', api.getCurrent().index);
+            //console.log('changed', api.getCurrent().index);
         })
 
 
