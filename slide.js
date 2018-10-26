@@ -14,9 +14,14 @@ function slide(el, index, xs) {
     this.width = this.getWidth();
     this.index = index;
 
+    // Reālā x pozīcija parent elementā
+    this.xReal = gv(xs, 'xReal', 0);
+
+    // Uzstādītā x nobīde. Tad, kad vajag pārvietot citā vietā
     this.x = gv(xs, 'x', 0);
-    this.startX = gv(xs, 'startX', 0);
-    this.realX = gv(xs, 'realX', 0);
+
+    // Handle move offseti
+    this.xOffset = gv(xs, 'xOffset', 0);
 }
 
 slide.prototype = {
@@ -27,11 +32,28 @@ slide.prototype = {
         this.width = this.getWidth();
     },
     /**
+     * Pozicionējam elementu
+     * x pozīcija veidojas no tekošās x nobīdes + uzstādītā X nobīde
+     */
+    updateCss: function() {
+        this.el.style.transform = 'translate3d('+(this.x + this.xOffset)+'px,0,0)'
+    },
+    setXOffset: function(v) {
+        this.xOffset = v
+    },
+    /**
      * Atgriežam reālo X pozīciju. Ņemot vērā fizisko novietoju
      * un ņemot vērā offset nobīdījumu
      */
     getX: function() {
-        return this.realX + this.x;
+        return this.xReal + this.x + this.xOffset;
+    },
+    start: function() {
+        // Nofiksējam rēalo x nobīdi
+        this.x = this.x + this.xOffset;
+
+        // Temp x offsetu nonullējam
+        this.xOffset = 0;
     }
 }
 

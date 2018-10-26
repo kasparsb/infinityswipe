@@ -10,12 +10,14 @@
             margin: 0;
         }
         .swipe {
-            max-width: 500px;
+            max-width:740px;
             height: 280px;
             box-sizing: border-box;
             margin: 0 auto;
 
             border: 4px solid red;
+            border-left: 0;
+            border-right: 0;
 
             position: relative;
             flex: 1 1 auto;
@@ -30,8 +32,8 @@
         }
 
         .swipe__item1 {
-            width: 160px;
-            margin-right: 5px;
+            width: 38%;
+            margin-right: 0;
             
 
             flex: 0 0 auto;
@@ -45,6 +47,9 @@
             background-size: cover;
             background-position: center;
             
+            font-size: 40px;
+            text-align: center;
+            color: #fff;
         }
         
     </style>
@@ -53,13 +58,17 @@
     <div style="display: flex;flex-wrap: wrap;align-items: center;padding:10px">
         <div class="swipe">
             <div class="swipe__items">
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)"></div></div>
-                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)"></div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg)">1</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg)">2</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg)">3</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)">4</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)">5</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)">6</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)">7</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)">4</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)">5</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)">6</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)">7</div></div>
             </div>
         </div>
     </div>
@@ -73,7 +82,7 @@
         var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item1'));
         
         api.onChange(function(){
-            //console.log('changed', api.getCurrent().index);
+            console.log('changed', api.getCurrent());
         })
 
 

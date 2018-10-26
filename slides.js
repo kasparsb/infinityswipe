@@ -10,6 +10,23 @@ var Slides = function(slides, viewportWidth, conf) {
 
     this.slides = [];
 
+    
+
+
+    var mthis = this;
+    window.logSlides = function() {
+        console.log(mthis.slides);
+    }
+    window.moveLastToFirst = function() {
+        mthis.moveLastToFirst();
+    }
+    window.moveFirstToLast = function() {
+        mthis.moveFirstToLast();
+    }
+
+
+
+
     this.conf = conf;
 
     this.slideAddCallbacks = [];
@@ -46,6 +63,7 @@ Slides.prototype = {
     },
 
     /**
+     * @todo šito vajag uztaisīt
      * Izkārtojam absolūti pozicionētos elementis vienu aiz otra
      */
     positionItems: function() {
@@ -63,42 +81,17 @@ Slides.prototype = {
 
     resize: function() {
 
-        return;
+        /**
+         *
+         *
+         *
+         * @todo Varbūt vajag kaut kā inteliģentāk pārrēķināt
+         *
+         *
+         *
+         */
+        this.reset();
 
-        // Update slides width
-        for (var i = 0; i < this.slides.length; i++) {
-            this.slides[i].width = getElementOuterDimensions(this.slides[i].el).width;
-        }
-
-        // Update slide x visiem, kur ir pa labi no ekrāna malas. Pozītīvs x
-        var lastX = 0;
-        for (var i = 0; i < this.slides.length; i++) {
-            if (this.slides[i].x < 0) {
-                continue;
-            }
-
-            this.slides[i].x = lastX;
-            this.slides[i].startX = lastX;
-            this.setX(this.slides[i].el, lastX);
-
-            // todo pielikt padding
-            lastX += (this.slides[i].width + this.getSlidesPadding());
-        }
-
-        // Update visus, kas ir pa kreisi no ekrāna malas. Negatīvs x
-        lastX = 0;
-        for (var i = this.slides.length-1; i >= 0; i--) {
-            if (this.slides[i].x >= 0) {
-                continue;
-            }
-
-            // todo atņemt padding
-            lastX -= (this.slides[i].width + this.getSlidesPadding());
-
-            this.slides[i].x = lastX;
-            this.slides[i].startX = lastX;
-            this.setX(this.slides[i].el, lastX);
-        }
     },
 
     
@@ -165,27 +158,11 @@ Slides.prototype = {
         }
 
         return 0;
-    },    
-
-    nextX: function() {
-        if (this.last()) {
-            return this.last().x + this.last().width + this.getSlidesPadding();
-        }
-
-        return 0;
     },
 
-    nextStartX: function() {
+    nextXReal: function() {
         if (this.last()) {
-            return this.last().startX + this.last().width + this.getSlidesPadding();
-        }
-
-        return 0;
-    },
-
-    nextRealX: function() {
-        if (this.last()) {
-            return this.last().realX + this.last().width + this.getSlidesPadding();
+            return this.last().xReal + this.last().width + this.getSlidesPadding();
         }
 
         return 0;
@@ -246,48 +223,43 @@ Slides.prototype = {
         var w = s.width + this.getSlidesPadding();
 
         // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
-        s.realX = oldSlide.realX;
+        s.xReal = oldSlide.xReal;
 
-        /**
-         * Vajag noskaidrot kādam ir jābūt jaunā slide x
-         * Pašlaik zināmie ir 
-         *     s.realX
-         *     s.getX - šim jābūt šādam: this.first().getX() - s.width
-         *     s.getX veidošanas formula ir šāda
-         *     s.getX = s.realX + s.x
-         *       6         3       2
-         *     šajā mirklī x ir nezināmais ?
-         *     s.x = s.getX - s.realX
-         */
-        s.x = (this.first().getX() - s.width) - s.realX;
-        s.startX = (this.first().startX - s.width) - s.realX;
-        
+
+
+        s.x = (this.first().xReal - (s.xReal + w)) + this.first().x
+
+        // Atjaunojam move xoffsetu
+        s.setXOffset(oldSlide.xOffset);
+
+        s.updateCss();
 
         this.slidesCount = this.slides.unshift(s);
 
-        this.setX(s.el, s.x);
-
-        this.executeSlideAddCallbacks(this.first().index, this.first().el);
+        this.executeSlideAddCallbacks(s.index, s.el);
     },
 
     /**
      * Pievienojam slide masīva beigās
      */
     pushSlide: function(oldSlide) {
+
         var s = new slide(oldSlide.el, this.nextIndex());
-        var w = s.width + this.getSlidesPadding();
-
+        var w = this.last().width + this.getSlidesPadding();
+        
         // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
-        s.realX = oldSlide.realX;
+        s.xReal = oldSlide.xReal;
 
-        console.log('aa1', s.realX, this.last().getX(), this.last().width);
+        
+        s.x = ((this.last().xReal + w) - s.xReal) + this.last().x;
 
-        s.x = (this.last().getX() + this.last().width) - s.realX;
-        s.startX = (this.last().startX + this.last().width) - s.realX;
+        // Atjaunojam move xoffsetu
+        s.setXOffset(oldSlide.xOffset);
+        
+        s.updateCss();
+
 
         this.slidesCount = this.slides.push(s);
-
-        this.setX(s.el, s.x);
 
         this.executeSlideAddCallbacks(s.index, s.el);
     },
@@ -302,22 +274,15 @@ Slides.prototype = {
     pushWithIndex: function(el, index) {
 
         var s = new slide(el, index, {
-            // Starta x viesiem ir 0, jo šajā mirklī elementiem jābūt izkārtotiem
-            x: 0,
-            startX: 0,
             // Saglabājam reālo x pozīciju
-            realX: this.nextRealX()
+            xReal: this.nextXReal()
         })
         
         this.slidesCount = this.slides.push(s);
 
-        this.setX(s.el, s.x);
+        s.updateCss();
 
         this.executeSlideAddCallbacks(this.last().index, this.last().el);
-    },
-
-    setX: function(el, x) {
-        el.style.transform = 'translate3d('+x+'px,0,0)'
     },
 
     /**
@@ -325,7 +290,7 @@ Slides.prototype = {
      */
     start: function() {
         this.slides.map(function(s){
-            s.startX = s.x;
+            s.start();
         }) 
     },
     
@@ -336,52 +301,60 @@ Slides.prototype = {
     setXOffset: function(offset) {
 
         for (var i = 0; i < this.slidesCount; i++) {
-            this.slides[i].x = this.slides[i].startX + offset;
-
-            this.setX(this.slides[i].el, this.slides[i].x);
+            this.slides[i].setXOffset(offset);
+            this.slides[i].updateCss();
         }
+
 
         this.balanceSlides();
     },
 
+    /**
+     * Pārvietojam pēdējo slaidu rindā uz rindas sākumu
+     */
+    moveLastToFirst: function() {
+        this.unshiftSlide(this.pop());
+    },
+
+    /**
+     * Pārvietojam pirmo slaidu rindā uz rindas beigām
+     */
+    moveFirstToLast: function() {
+        this.pushSlide(this.shift());
+    },
+
     balanceSlides: function() {
+
         // Balansējam tikai, ja viewport.width > 0
         if (this.viewport.width <= 0) {
             return;
         }
 
-        var safe = 0;
+        var b = this.slidesCountBeforeViewport();
+        var a = this.slidesCountAfterViewport();
+
+        /**
+         * Aprēķinām starpību starp items pirms un pēc. Dala ar divi
+         * Apaļojam uz leju
+         * Atkarībā no tā vai d > 0 vai d < 0 noteiksim virzienu, kurā pārvietot slaidus
+         */
+        var d = Math.floor((a - b) / 2);
 
 
-        // Pārbaudām vai aiz viewport nav par maz slaidu
-        while (this.slidesCountAfterViewport() < 1) {
-
-
-            console.log('balance after');
-
-            // Pirmo slide no kreisās puses pārliekam uz beigām
-            this.pushSlide(this.shift());
-
-            if (safe++ > 100) {
-                console.log('saved 1');
-                return;
-            }
+        // Ja nav neviena slaida, ko pārvietot, tad bail
+        if (Math.abs(d) < 1) {
+            return;
         }
 
-        // Pārbaudām vai pirms viewport nav par maz slaidu
-        while (this.slidesCountBeforeViewport() < 1) {
+        /**
+         * Ja d < 0, tad pārvietojam no beigām uz sākumu
+         * Ja d > 0, tad pārvietojam no sākuma uz beigām
+         */
+        var method = d < 0 ? 'moveFirstToLast' : 'moveLastToFirst';
 
-            
-            console.log('balance before');
-
-
-
-            this.unshiftSlide(this.pop());
-
-            if (safe++ > 100) {
-                console.log('saved 2');
-                return;
-            }
+        d = Math.abs(d);
+        for (var i = 0; i < d; i++) {
+            this[method]();
         }
     },
 
@@ -393,6 +366,59 @@ Slides.prototype = {
 
     getSlidesPadding: function() {
         return this.conf.slidesPadding();
+    },
+
+    isBetweenX: function(slide, x1, x2) {
+        if (slide.getX() > x1 && slide.getX() < x2) {
+            return true;
+        }
+    },
+
+    /**
+     * Meklējam pirmo slide starp padotajām x koordinātēm
+     * @searchDirection meklēšanas virziens ASC vai DESC
+     */
+    findBetweenX: function(x1, x2, searchDirection) {
+
+        if (searchDirection == 'asc') {
+            for (var i = 0; i < this.slides.length; i++) {
+                if (this.isBetweenX(this.slides[i], x1, x2)) {
+                    return this.slides[i];
+                }
+            }
+        }
+        else {
+            for (var i = this.slides.length-1; i >= 0; i--) {
+                if (this.isBetweenX(this.slides[i], x1, x2)) {
+                    return this.slides[i];
+                }
+            }   
+        }
+        
+        return undefined;
+    },
+
+    findFirstBetweenX: function(x1, x2) {
+        return this.findBetweenX(x1, x2, 'asc');
+    },
+
+    findLastBetweenX: function(x1, x2) {
+        return this.findBetweenX(x1, x2, 'desc');  
+    },
+
+    /**
+     * Atrodam nākošo offsetX aiz norādītā x
+     */
+    findSlideOffsetXNextFrom: function(x) {
+        var r = undefined;
+        for (var i = 0; i < this.slides.length; i++) {
+            if (this.slides[i].getX() > x) {
+                if (typeof r == 'undefined' || this.slides[i].getX() < r) {
+                    r = this.slides[i].getX();
+                }
+            }
+        }
+        return r;
     }
 }
 

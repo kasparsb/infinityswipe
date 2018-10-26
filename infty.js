@@ -5,6 +5,18 @@ var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
 
+
+    window.startMove = function() {
+        console.log('asdadadads');
+        slides.start();
+        isMoveStarted = true;            
+    }
+    window.setXOffset = function(x) {
+        slides.setXOffset(x);
+    }
+
+
+
     var slideAddCb, changeCb, slideMoveCb = function(){};
     var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
@@ -58,9 +70,8 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
-        
-        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction);    
-        
+        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction);
+
         slides.setXOffset(d.offset.x);
     }
 
@@ -75,19 +86,12 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
-        var x;
-        // Ja direction left, tad tuvāko slide labajai malai
-        if (d.direction == 'left') {
-            x = findFirstSlideOffsetXBetween(0, viewportWidth)
-        }
-        else {
-            x = findLastSlideOffsetXBetween(0, viewportWidth)
-        }
-
+    
         snapSlides(
             d.direction, 
             
-            x, 
+            // Ja direction left, tad tuvāko slide labajai malai
+            slides[d.direction == 'left' ? 'findFirstBetweenX' : 'findLastBetweenX'](0, viewportWidth).getX(),
 
             d.isSwipe, 
             d.touchedElement ? true : false
@@ -238,60 +242,6 @@ function createSwipe(el, $slides, conf) {
         return 0;
     }
 
-    /**
-     * @searchDirection meklēšanas virziens ASC vai DESC
-     */
-    function findSlideBetween(start, stop, searchDirection) {
-
-        if (searchDirection == 'asc') {
-            for (var i = 0; i < slides.slides.length; i++) {
-                if (slides.slides[i].getX() > start && slides.slides[i].getX() < stop) {
-                    return slides.slides[i];
-                }
-            }
-        }
-        else {
-            for (var i = slides.slides.length-1; i >= 0; i--) {
-                if (slides.slides[i].getX() > start && slides.slides[i].getX() < stop) {
-                    return slides.slides[i];
-                }
-            }   
-        }
-        
-        return undefined;
-    }
-
-    function findFirstSlideOffsetXBetween(start, stop) {
-        var slide = findSlideBetween(start, stop, 'asc');
-        if (slide) {
-            return slide.getX();
-        }
-        return undefined;
-    }
-
-    function findLastSlideOffsetXBetween(start, stop) {
-        var slide = findSlideBetween(start, stop, 'desc');
-        if (slide) {
-            return slide.getX();
-        }
-        return undefined;
-    }
-
-    /**
-     * Atrodam nākošo offsetX aiz norādītā x
-     */
-    function findSlideOffsetXNextFrom(x) {
-        var r = undefined;
-        for (var i = 0; i < slides.slides.length; i++) {
-            if (slides.slides[i].x > x) {
-                if (typeof r == 'undefined' || slides.slides[i].x < r) {
-                    r = slides.slides[i].x;
-                }
-            }
-        }
-        return r;
-    }
-
     function handleSlideAdd(index, el) {
         if (slideAddCb) {
             slideAddCb(index, el);
@@ -338,7 +288,7 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         nextSlide: function() {
-            snapSlides('left', findSlideOffsetXNextFrom(0), true, false);
+            snapSlides('left', slides.findSlideOffsetXNextFrom(0), true, false);
         },
         prevSlide: function() {
             snapSlides('right', 0, true, false);
@@ -347,14 +297,14 @@ function createSwipe(el, $slides, conf) {
             slides.showByIndex(index);
         },
         getCurrent: function() {
-            return findSlideBetween(-1, viewportWidth, 'asc');
+            return slides.findFirstBetweenX(-1, viewportWidth);
         },
         getNext: function() {
-            var s = findSlideBetween(-1, viewportWidth, 'asc');
+            var s = slides.findFirstBetweenX(-1, viewportWidth);
             return slides.getByIndex(s.index+1);
         },
         getPrev: function() {
-            var s = findSlideBetween(-1, viewportWidth, 'asc');
+            var s = slides.findFirstBetweenX(-1, viewportWidth);
             return slides.getByIndex(s.index-1);
         },
         getSlides: function() {
