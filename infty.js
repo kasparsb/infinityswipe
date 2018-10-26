@@ -4,19 +4,6 @@ var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
-
-
-    window.startMove = function() {
-        console.log('asdadadads');
-        slides.start();
-        isMoveStarted = true;            
-    }
-    window.setXOffset = function(x) {
-        slides.setXOffset(x);
-    }
-
-
-
     var slideAddCb, changeCb, slideMoveCb = function(){};
     var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
@@ -36,7 +23,8 @@ function createSwipe(el, $slides, conf) {
     function initSlides() {
         slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd,
-            slidesPadding: getSlidesPadding
+            slidesPadding: getSlidesPadding,
+            positionItems: getPositionItems()
         });
     }
 
@@ -240,6 +228,13 @@ function createSwipe(el, $slides, conf) {
         }
 
         return 0;
+    }
+
+    function getPositionItems() {
+        if (conf && typeof conf.positionItems != 'undefined') {
+            return conf.positionItems;
+        }
+        return false;
     }
 
     function handleSlideAdd(index, el) {

@@ -10,23 +10,6 @@ var Slides = function(slides, viewportWidth, conf) {
 
     this.slides = [];
 
-    
-
-
-    var mthis = this;
-    window.logSlides = function() {
-        console.log(mthis.slides);
-    }
-    window.moveLastToFirst = function() {
-        mthis.moveLastToFirst();
-    }
-    window.moveFirstToLast = function() {
-        mthis.moveFirstToLast();
-    }
-
-
-
-
     this.conf = conf;
 
     this.slideAddCallbacks = [];
@@ -49,8 +32,8 @@ Slides.prototype = {
          * Ja ir absolūti pozicionēti elementi, visi viens virs
          * otra, tad šeit nopozicionējam vienu aiz otra
          */
-        if (0) {
-            this.positionItems();    
+        if (this.conf.positionItems) {
+            this.positionItems();
         }
         
 
@@ -67,7 +50,13 @@ Slides.prototype = {
      * Izkārtojam absolūti pozicionētos elementis vienu aiz otra
      */
     positionItems: function() {
+        var mthis = this;
+        var x = 0;
+        this.slidesElements.each(function(el){
+            el.style.left = x+'px';
 
+            x = x + getElementOuterDimensions(el).width + mthis.getSlidesPadding();
+        })
     },
 
     reset: function() {
