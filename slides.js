@@ -1,5 +1,6 @@
 var getElementOuterDimensions = require('./getElementOuterDimensions');
 var elementsCollection = require('./elementsCollection');
+var slide = require('./slide');
 
 var Slides = function(slides, viewportWidth, conf) {
     this.viewport = {}
@@ -100,6 +101,16 @@ Slides.prototype = {
         }
     },
 
+    
+    /**
+     *
+     *
+     *
+     * @todo Pārskatīt. Vai tiešām vajag skatīties pēc reālo elementu index
+     *
+     *
+     *
+     */
     showByIndex: function(index) {
         this.slides = [];
 
@@ -186,7 +197,7 @@ Slides.prototype = {
     slidesCountAfterViewport: function() {
         var r = 0;
         for (var i = 0; i < this.slidesCount; i++) {
-            if (this.slides[i].x > this.viewport.width) {
+            if (this.slides[i].getX() > this.viewport.width) {
                 r++;
             }
         }
@@ -200,7 +211,7 @@ Slides.prototype = {
     slidesCountBeforeViewport: function() {
         var r = 0;
         for (var i = 0; i < this.slidesCount; i++) {
-            if (this.slides[i].x + this.slides[i].width < 0) {
+            if (this.slides[i].getX() + this.slides[i].width < 0) {
                 r++;
             }
         }
@@ -230,16 +241,31 @@ Slides.prototype = {
     /**
      * Pievienojam slide masīva sākumā
      */
-    unshift: function(el) {
-        this.slidesCount = this.slides.unshift({
-            el: el,
-            index: this.first().index - 1,
-            x: this.first().x - (getElementOuterDimensions(el).width + this.getSlidesPadding()),
-            startX: this.first().startX - (getElementOuterDimensions(el).width + this.getSlidesPadding()),
-            width: getElementOuterDimensions(el).width
-        });
+    unshiftSlide: function(oldSlide) {
+        var s = new slide(oldSlide.el, this.first().index - 1);
+        var w = s.width + this.getSlidesPadding();
 
-        this.setX(el, this.first().x);
+        // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
+        s.realX = oldSlide.realX;
+
+        /**
+         * Vajag noskaidrot kādam ir jābūt jaunā slide x
+         * Pašlaik zināmie ir 
+         *     s.realX
+         *     s.getX - šim jābūt šādam: this.first().getX() - s.width
+         *     s.getX veidošanas formula ir šāda
+         *     s.getX = s.realX + s.x
+         *       6         3       2
+         *     šajā mirklī x ir nezināmais ?
+         *     s.x = s.getX - s.realX
+         */
+        s.x = (this.first().getX() - s.width) - s.realX;
+        s.startX = (this.first().startX - s.width) - s.realX;
+        
+
+        this.slidesCount = this.slides.unshift(s);
+
+        this.setX(s.el, s.x);
 
         this.executeSlideAddCallbacks(this.first().index, this.first().el);
     },
@@ -247,25 +273,45 @@ Slides.prototype = {
     /**
      * Pievienojam slide masīva beigās
      */
+    pushSlide: function(oldSlide) {
+        var s = new slide(oldSlide.el, this.nextIndex());
+        var w = s.width + this.getSlidesPadding();
+
+        // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
+        s.realX = oldSlide.realX;
+
+        console.log('aa1', s.realX, this.last().getX(), this.last().width);
+
+        s.x = (this.last().getX() + this.last().width) - s.realX;
+        s.startX = (this.last().startX + this.last().width) - s.realX;
+
+        this.slidesCount = this.slides.push(s);
+
+        this.setX(s.el, s.x);
+
+        this.executeSlideAddCallbacks(s.index, s.el);
+    },
+
+    /**
+     * Pievienojam elementu masīva beigās
+     */
     push: function(el) {
         this.pushWithIndex(el, this.nextIndex());
     },
 
     pushWithIndex: function(el, index) {
-        this.slidesCount = this.slides.push({
-            el: el,
-            index: index,
-            width: getElementOuterDimensions(el, true).width,
 
+        var s = new slide(el, index, {
             // Starta x viesiem ir 0, jo šajā mirklī elementiem jābūt izkārtotiem
             x: 0,
             startX: 0,
-
             // Saglabājam reālo x pozīciju
             realX: this.nextRealX()
-        });
+        })
+        
+        this.slidesCount = this.slides.push(s);
 
-        this.setX(el, this.last().x);
+        this.setX(s.el, s.x);
 
         this.executeSlideAddCallbacks(this.last().index, this.last().el);
     },
@@ -299,30 +345,43 @@ Slides.prototype = {
     },
 
     balanceSlides: function() {
-
-        return;
-
-
         // Balansējam tikai, ja viewport.width > 0
         if (this.viewport.width <= 0) {
             return;
         }
 
-        /**
-         * @todo Uzlabot balansēšanu, lai gadījumā ir maz slide elementu,
-         * tad lai viens no slaidiem netiek visu laiku mētās no sākuma uz 
-         * beigām un otrādi
-         */
+        var safe = 0;
+
 
         // Pārbaudām vai aiz viewport nav par maz slaidu
         while (this.slidesCountAfterViewport() < 1) {
-            // Pirmo no kreisās puses pārliekam uz beigām
-            this.push(this.shift().el);
+
+
+            console.log('balance after');
+
+            // Pirmo slide no kreisās puses pārliekam uz beigām
+            this.pushSlide(this.shift());
+
+            if (safe++ > 100) {
+                console.log('saved 1');
+                return;
+            }
         }
 
         // Pārbaudām vai pirms viewport nav par maz slaidu
         while (this.slidesCountBeforeViewport() < 1) {
-            this.unshift(this.pop().el);
+
+            
+            console.log('balance before');
+
+
+
+            this.unshiftSlide(this.pop());
+
+            if (safe++ > 100) {
+                console.log('saved 2');
+                return;
+            }
         }
     },
 

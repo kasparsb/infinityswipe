@@ -84,8 +84,6 @@ function createSwipe(el, $slides, conf) {
             x = findLastSlideOffsetXBetween(0, viewportWidth)
         }
 
-        console.log('asdasd', d.direction, x);
-
         snapSlides(
             d.direction, 
             
@@ -112,8 +110,6 @@ function createSwipe(el, $slides, conf) {
         if (stepper.isRunning()) {
             return;
         }
-
-        console.log('snapSlides', x);
 
         var startProgress, targetOffset, slideMoveDirection;
 
@@ -242,10 +238,6 @@ function createSwipe(el, $slides, conf) {
         return 0;
     }
 
-    function getSlideOffsetX(slide) {
-        return slide.realX + slide.x;
-    }
-
     /**
      * @searchDirection meklēšanas virziens ASC vai DESC
      */
@@ -253,14 +245,14 @@ function createSwipe(el, $slides, conf) {
 
         if (searchDirection == 'asc') {
             for (var i = 0; i < slides.slides.length; i++) {
-                if (getSlideOffsetX(slides.slides[i]) > start && getSlideOffsetX(slides.slides[i]) < stop) {
+                if (slides.slides[i].getX() > start && slides.slides[i].getX() < stop) {
                     return slides.slides[i];
                 }
             }
         }
         else {
             for (var i = slides.slides.length-1; i >= 0; i--) {
-                if (getSlideOffsetX(slides.slides[i]) > start && getSlideOffsetX(slides.slides[i]) < stop) {
+                if (slides.slides[i].getX() > start && slides.slides[i].getX() < stop) {
                     return slides.slides[i];
                 }
             }   
@@ -272,7 +264,7 @@ function createSwipe(el, $slides, conf) {
     function findFirstSlideOffsetXBetween(start, stop) {
         var slide = findSlideBetween(start, stop, 'asc');
         if (slide) {
-            return getSlideOffsetX(slide);
+            return slide.getX();
         }
         return undefined;
     }
@@ -280,7 +272,7 @@ function createSwipe(el, $slides, conf) {
     function findLastSlideOffsetXBetween(start, stop) {
         var slide = findSlideBetween(start, stop, 'desc');
         if (slide) {
-            return getSlideOffsetX(slide);
+            return slide.getX();
         }
         return undefined;
     }
