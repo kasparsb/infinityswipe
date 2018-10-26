@@ -23,8 +23,8 @@
 
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
@@ -77,10 +77,18 @@
     
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>
-        var api1 = new webit.infinitySwipe($('.swipe--1').get(0), $('.swipe--1').find('.swipe__item'));
-        var api2 = new webit.infinitySwipe($('.swipe--2').get(0), $('.swipe--2').find('.swipe__item'));
-        var api3 = new webit.infinitySwipe($('.swipe--3').get(0), $('.swipe--3').find('.swipe__item'));
-        var api4 = new webit.infinitySwipe($('.swipe--4').get(0), $('.swipe--4').find('.swipe__item'));
+        var api1 = new webit.infinitySwipe($('.swipe--1').get(0), $('.swipe--1').find('.swipe__item'), {
+            positionItems: true
+        });
+        var api2 = new webit.infinitySwipe($('.swipe--2').get(0), $('.swipe--2').find('.swipe__item'), {
+            positionItems: true
+        });
+        var api3 = new webit.infinitySwipe($('.swipe--3').get(0), $('.swipe--3').find('.swipe__item'), {
+            positionItems: true
+        });
+        var api4 = new webit.infinitySwipe($('.swipe--4').get(0), $('.swipe--4').find('.swipe__item'), {
+            positionItems: true
+        });
 
 
         var imageIndex1 = 0, imageIndex2 = 0, imageIndex3 = 0, imageIndex4 = 0;

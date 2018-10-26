@@ -79,7 +79,10 @@
     <script>
         
 
-        var api = new webit.infinitySwipe($('.swipe').get(0), $('.swipe').find('.swipe__item1'));
+        var api = new webit.infinitySwipe(
+            $('.swipe').get(0),
+            $('.swipe').find('.swipe__item1')
+        );
         
         api.onChange(function(){
             console.log('changed', api.getCurrent());
