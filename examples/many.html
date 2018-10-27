@@ -75,6 +75,15 @@
             }
         );
 
+        api.onPagesCount(function(c){
+            console.log('pages', c);
+        })
+
+        setTimeout(function(){
+            console.log('resize');
+            api.resize()
+        }, 2000)
+
         $(document).on('click', 'button[name=prev]', function(ev){
             ev.preventDefault();
 
