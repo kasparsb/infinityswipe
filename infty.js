@@ -4,7 +4,7 @@ var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
-    var slideAddCb, changeCb, slideMoveCb = function(){};
+    var slideAddCb, changeCb, pagesCountCb, slideMoveCb = function(){};
     var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -24,7 +24,12 @@ function createSwipe(el, $slides, conf) {
         slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd,
             slidesPadding: getSlidesPadding,
-            positionItems: getPositionItems()
+            positionItems: getPositionItems(),
+            onPagesCount: function(c){
+                if (pagesCountCb) {
+                    pagesCountCb(c)
+                }
+            }
         });
     }
 
@@ -271,6 +276,9 @@ function createSwipe(el, $slides, conf) {
         },
         onChange: function(cb) {
             changeCb = cb;
+        },
+        onPagesCount: function(cb) {
+            pagesCountCb = cb;
         },
         /**
          * Slide kustība. Lai var slide kustību sinhronizēt

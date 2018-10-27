@@ -12,6 +12,8 @@ var Slides = function(slides, viewportWidth, conf) {
 
     this.conf = conf;
 
+    this.pagesCountCallback = conf.onPagesCount;
+
     this.slideAddCallbacks = [];
     if (this.conf && this.conf.onSlideAdd) {
         this.slideAddCallbacks.push(this.conf.onSlideAdd)
@@ -43,6 +45,8 @@ Slides.prototype = {
         })
 
         this.balanceSlides();
+
+        this.pagesCountCallback(this.countPages());
     },
 
     /**
@@ -407,6 +411,30 @@ Slides.prototype = {
                 }
             }
         }
+        return r;
+    },
+
+    countPages: function() {
+        if (this.slides.length == 0) {
+            return 0;
+        }
+
+        var r = 0;
+        var t = 0;
+        var mthis = this;
+        this.slides.forEach(function(slide){
+            t += (slide.width + mthis.getSlidesPadding());
+
+            if (t >= mthis.viewport.width) {
+                r++;
+                t = 0;
+            }
+        })
+
+        if (t >= this.viewport.width) {
+            r++;
+        }
+
         return r;
     }
 }
