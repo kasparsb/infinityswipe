@@ -25,7 +25,7 @@ function slide(el, index, xs) {
 }
 
 slide.prototype = {
-    getWidth() {
+    getWidth: function() {
         return getElementOuterDimensions(this.el, true).width;
     },
     updateWidth: function() {
