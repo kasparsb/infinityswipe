@@ -431,7 +431,7 @@ Slides.prototype = {
             }
         })
 
-        if (t >= this.viewport.width) {
+        if (t > 0) {
             r++;
         }
 
