@@ -394,28 +394,46 @@ Slides.prototype = {
         return undefined;
     },
 
+    /**
+     * Atrodam slide, kura getX ir viss tuvāk x no kreisās puses
+     */
+    findClosestToXFromLeft: function(x) {
+        var r;
+        for (var i = 0; i < this.slidesCount; i++) {
+            // Izlaišam visus, kas ir lielāki par x
+            if (this.slides[i].getX() > x) {
+                continue;
+            }
+            if (typeof r == 'undefined' || this.slides[r].getX() < this.slides[i].getX()) {
+                r = i;
+            }
+        }
+        return this.slides[r];
+    },
+
+    /**
+     * Atrodam nākošo offsetX aiz norādītā x
+     */
+    findClosestToXFromRight: function(x) {
+        var r;
+        for (var i = 0; i < this.slidesCount; i++) {
+            // Izlaišam visus, kas ir lielāki par x
+            if (this.slides[i].getX() < x) {
+                continue;
+            }
+            if (typeof r == 'undefined' || this.slides[r].getX() > this.slides[i].getX()) {
+                r = i;
+            }
+        }
+        return this.slides[r];
+    },
+
     findFirstBetweenX: function(x1, x2) {
         return this.findBetweenX(x1, x2, 'asc');
     },
 
     findLastBetweenX: function(x1, x2) {
         return this.findBetweenX(x1, x2, 'desc');  
-    },
-
-    /**
-     * Atrodam nākošo offsetX aiz norādītā x
-     */
-    findSlideOffsetXNextFrom: function(x) {
-        var sorted = this.getSortedVisual('asc');
-        var r = undefined;
-        for (var i = 0; i < sorted.length; i++) {
-            if (sorted[i].getX() > x) {
-                if (typeof r == 'undefined' || sorted[i].getX() < r) {
-                    r = sorted[i].getX();
-                }
-            }
-        }
-        return r;
     },
 
     /**

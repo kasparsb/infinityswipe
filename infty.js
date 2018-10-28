@@ -80,11 +80,19 @@ function createSwipe(el, $slides, conf) {
         isMoveStarted = false;
 
     
-        snapSlides(
-            d.direction, 
-            
-            // Ja direction left, tad tuvāko slide labajai malai
-            slides[d.direction == 'left' ? 'findFirstBetweenX' : 'findLastBetweenX'](0, viewportWidth).getX(),
+        snapSlide(
+            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
+            (function(){
+                // Ja direction left, tad tuvāko slide labajai malai
+                if (d.direction == 'left') {
+                    return slides.findClosestToXFromRight(0)
+                }
+                else {
+                    return slides.findClosestToXFromLeft(0)
+                }
+            })(),
+
+            0,
 
             d.isSwipe, 
             d.touchedElement ? true : false
@@ -99,7 +107,54 @@ function createSwipe(el, $slides, conf) {
      * Lietotājs apzināti taisīja swipe pa labi vai kreisi
      * @param boolean Vai nofiksēšanu izraisīja touch notikums
      */
-    function snapSlides(direction, x, isSwipe, isTouch) {
+
+    function snapSlide(slide, snapTarget, isSwipe, isTouch) {
+        // Stepojam no slide.getX() uz snapTarget
+        // Progress nosakām pēc slide width + this.getSlidesPadding()
+        var transitionWidth = slide.width + getSlidesPadding();
+
+
+        slides.start();
+
+        startProgress = 0;
+
+        /**
+         * Aprēķinām kādu vajag offset, lai pārvietotos no getX uz snapTarget
+         * Kad progress ir 0, tad offset atteicīgi arī ir 0
+         * Kad progress ir 1, tad tas offset ir attālums starp slide.getX un snapTarget
+         */
+        var targetOffset = snapTarget - slide.getX();
+
+        stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
+            // Te vajag aprēķināt direction
+            slideMoveCb(progress, 'left');
+
+            slides.setXOffset(progressToValue(progress, 0, targetOffset));
+
+        }, function() {
+            slideSnapTransitionDone({
+                isSwipe: isSwipe, 
+                isTouch: isTouch
+            });
+        })
+    }
+
+    function progressToValue(progress, fromValue, toValue) {
+        var w = fromValue - toValue;
+        return fromValue - (w * progress);
+    }
+
+    function snapSlides2(direction, x, isSwipe, isTouch) {
+
+        // šai metodei nevajag zināt vai ir bijis swipe. Tā tikai un vienīgi
+        // snapo slide getX pret 0
+        // snapSlide - iedodu iekšā slide
+        // vienmēr nosnapojam slide kreiso malu (getX) pret 0
+        // Ja slide getX ir pozitīvs, tad tas snaposies uz kreiso pusi
+        // Ja slide getX ir negatīvs, tas tas snaposies uz labo pusi
+
+
+        console.log('snapSlides', x);
         if (typeof x == 'undefined') {
             return;
         }
@@ -197,8 +252,6 @@ function createSwipe(el, $slides, conf) {
             }
 
 
-            
-
             slides.setXOffset(targetOffset);
 
         }, function(){
@@ -291,10 +344,26 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         nextSlide: function() {
-            snapSlides('left', slides.findSlideOffsetXNextFrom(0), true, false);
+            // Virzienu nevajag zināt. Vajag padod tikai slide kuru nospnaot
+            //snapSlides('left', slides.findClosestToXFromRight(slides.findFirstBetweenX(-1, viewportWidth).getX()+1).getX(), true, false);
+
+            snapSlide(
+                slides.findClosestToXFromRight(slides.findFirstBetweenX(-1, viewportWidth).getX()+1),
+                0,
+                false,
+                false
+            )
         },
         prevSlide: function() {
-            snapSlides('right', 0, true, false);
+            // Virzienu nevajag zināt. Vajag padod tikai slide kuru nospnaot
+            //snapSlides('right', slides.findClosestToXFromLeft(-1).getX(), true, false);
+
+            snapSlide(
+                slides.findClosestToXFromLeft(-1),
+                0,
+                false,
+                false
+            )
         },
         nextPage: function() {
 
