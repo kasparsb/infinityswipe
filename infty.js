@@ -5,10 +5,10 @@ var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
     var slideAddCb, changeCb, pagesCountCb, slideMoveCb = function(){};
-    var slides, stepper, viewportWidth = 0;
+    var slides, stepper, viewportWidth = 0, startMoveSlide;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
-    var stepperDuration = 3000;
+    var stepperDuration = 300;
 
     // Pēc noklusējuma viss ir enbabled, bet ir iespēja uz mirkli atslēgt touch eventus
     var isEnabled = true;
@@ -46,6 +46,9 @@ function createSwipe(el, $slides, conf) {
             stepper.stop();
         }
 
+        // Pieglabājam current slide, no kura tika sākta kustība
+        startMoveSlide = slides.findFirstBetweenX(-1, viewportWidth);
+
         slides.start();
         isMoveStarted = true;
     }
@@ -79,16 +82,34 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
-    
+        /**
+         * Kāda daļa no pārbīdāmā slide jau ir pārbīdīta
+         * Tas vajadzīgs, lai gadījumā ja tikai nedaudz pabīdīts, tad
+         * atliktu atpakaļ, tas ir, lietotājs nemaz negribēja pārbīdīt
+         * Ja ratio lielāks par 0.333, tad lietotājs gribēja bīdīt
+         * Kaut gan šeit mazākiem slaidiem varbūt 0.33 ir maz???
+         */
+        var moveRatio = Math.abs(d.offset.x / startMoveSlide.width)
+
         snapSlide(
             // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
             (function(){
                 // Ja direction left, tad tuvāko slide labajai malai
                 if (d.direction == 'left') {
-                    return slides.findClosestToXFromRight(0)
+                    if (d.isSwipe || moveRatio > 0.33333) {
+                        return slides.findClosestToXFromRight(0)
+                    }
+                    else {
+                        return slides.findClosestToXFromLeft(0)
+                    }
                 }
                 else {
-                    return slides.findClosestToXFromLeft(0)
+                    if (d.isSwipe || moveRatio > 0.33333) {
+                        return slides.findClosestToXFromLeft(0)
+                    }
+                    else {
+                        return slides.findClosestToXFromRight(0)   
+                    }
                 }
             })(),
 
@@ -100,18 +121,13 @@ function createSwipe(el, $slides, conf) {
     }
 
     /**
-     * Nofiksējam slides norādītajā virzienā
-     * @param string Virziens, kurā jānofiksē slides
-     * @param number Offset
-     * @param boolean Vai bija pilnīga swipe kustība. 
-     * Lietotājs apzināti taisīja swipe pa labi vai kreisi
-     * @param boolean Vai nofiksēšanu izraisīja touch notikums
+     * Nofiksējam slide pret norādīto pozīciju
      */
-
     function snapSlide(slide, snapTarget, isSwipe, isTouch) {
         // Stepojam no slide.getX() uz snapTarget
         // Progress nosakām pēc slide width + this.getSlidesPadding()
-        var transitionWidth = slide.width + getSlidesPadding();
+        //var transitionWidth = slide.width + getSlidesPadding();
+        //var transitionWidth = viewportWidth;
 
 
         slides.start();
@@ -142,124 +158,6 @@ function createSwipe(el, $slides, conf) {
     function progressToValue(progress, fromValue, toValue) {
         var w = fromValue - toValue;
         return fromValue - (w * progress);
-    }
-
-    function snapSlides2(direction, x, isSwipe, isTouch) {
-
-        // šai metodei nevajag zināt vai ir bijis swipe. Tā tikai un vienīgi
-        // snapo slide getX pret 0
-        // snapSlide - iedodu iekšā slide
-        // vienmēr nosnapojam slide kreiso malu (getX) pret 0
-        // Ja slide getX ir pozitīvs, tad tas snaposies uz kreiso pusi
-        // Ja slide getX ir negatīvs, tas tas snaposies uz labo pusi
-
-
-        console.log('snapSlides', x);
-        if (typeof x == 'undefined') {
-            return;
-        }
-
-        if (stepper.isRunning()) {
-            return;
-        }
-
-        var startProgress, targetOffset, slideMoveDirection;
-
-        var vpw = viewportWidth;
-
-        /**
-         * Nosakām kāds ir slaid iekadrēšanas progress
-         * Ja tiek bīdīts pa labi un ir swipe kustība, tad 
-         * bīdam pa labi un progress ir sākuma
-         * Ja nav swipe, tad tiek slaids bīdīts atpakaļ un progress
-         * ir pretējs
-         */
-        if (direction == 'right') {
-            slideMoveDirection = 'right';
-
-            /**
-             * @todo Šito vēl kārtīgi pādomāt
-             * Pašlaik liekam, klāt jo pēdējais slide iet ar padding ārpus
-             * viewport width, tāpēc, kad animē visu uz prev vierzienu, tad
-             * jāņēm vērā šis padding, ja nē, tad slides pozicionējas ar nobīdi
-             */
-            vpw += getSlidesPadding();
-
-            startProgress = Math.abs(x) / vpw;
-            if (!isSwipe && (startProgress < 0.3333)) {
-                startProgress = 1 - startProgress;
-
-                slideMoveDirection = 'left';
-            }
-        }
-        else if (direction == 'left') {
-            slideMoveDirection = 'right';
-
-            startProgress = Math.abs(x) / vpw;
-            if (isSwipe || (startProgress < 0.7777)) {
-                startProgress = 1 - startProgress;
-
-                slideMoveDirection = 'left';
-            }
-        }
-
-
-
-        // Nofiksējam slaidu x pozīcijas
-        /**
-         * @todo slides.start jāpārsauc savādāk
-         */
-        slides.start();
-        
-        stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
-
-            // Šis būs tas offset, kurš tiek animēts un kurš ir jāliek klāt slaidam
-            targetOffset = vpw - (progress * vpw);
-
-            // Atkarībā no virziena piekoriģējam offset
-            // Ja bīdām pa labi, tad sākam no 0 līdz targetOffset
-            if (slideMoveDirection == 'right') {
-                targetOffset = (vpw - x) - targetOffset;
-            }
-            else if (slideMoveDirection == 'left') {
-                targetOffset = (x - targetOffset) * -1;
-            }
-
-            
-
-
-            /**
-             * slideMoveCb padodam user izvēlēto kustību
-             * Kad slide atnāk atpakaļ savā vietā dēļ nepietiekamas
-             * kustības, tad lai movecb simulētu tā it kā lietotājs pats
-             * atbīdīja atpakaļ
-             */
-            if (slideMoveDirection == 'right') {
-                if (direction == 'right') {
-                    slideMoveCb(progress, direction);
-                }
-                else {
-                    slideMoveCb(1-progress, direction);
-                }
-            }
-            else {
-                if (direction == 'right') {
-                    slideMoveCb(1-progress, direction);
-                }
-                else {
-                    slideMoveCb(progress, direction);
-                }
-            }
-
-
-            slides.setXOffset(targetOffset);
-
-        }, function(){
-            slideSnapTransitionDone({
-                isSwipe: isSwipe, 
-                isTouch: isTouch
-            });
-        })
     }
 
     function slideSnapTransitionDone(params) {
