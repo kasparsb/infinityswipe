@@ -118,7 +118,7 @@ Slides.prototype = {
      * Atgriežam slide pēc kārtas numura redzamājā daļā
      */
     getByIndex: function(index) {
-        for (var i = 0; i < this.slides.length; i++) {
+        for (var i = 0; i < this.slidesCount; i++) {
             if (this.slides[i].index === index) {
                 return this.slides[i];
             }
@@ -144,6 +144,32 @@ Slides.prototype = {
 
         return false;
     },
+
+    /**
+     * Atgriežam slide, kurš vizuāli ir pats pēdējais
+     */
+    visualLast: function() {
+        var r = 0;
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (this.slides[r].getX() < this.slides[i].getX()) {
+                r = i;
+            }
+        }
+        return this.slides[r];
+    },
+
+    /**
+     * Atgriežam slide, kurš vizuāli ir pats pirmais
+     */
+    visualFirst: function() {
+        var r;
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (typeof r == 'undefined' || this.slides[r].getX() > this.slides[i].getX()) {
+                r = i;
+            }
+        }
+        return this.slides[r];
+    },    
 
     nextIndex: function() {
         if (this.last()) {
@@ -187,74 +213,6 @@ Slides.prototype = {
         }
 
         return r;
-    },
-
-
-    /**
-     * Izmetam pirmo slaid ārā un atgriežam to
-     */
-    shift: function() {
-        this.slidesCount--;
-
-        return this.slides.shift();
-    },
-
-    /**
-     * Izmetam pēdējo slaid ārā un atgriežam to
-     */
-    pop: function() {
-        this.slidesCount--;
-
-        return this.slides.pop();
-    },
-
-    /**
-     * Pievienojam slide masīva sākumā
-     */
-    unshiftSlide: function(oldSlide) {
-        var s = new slide(oldSlide.el, this.first().index - 1);
-        var w = s.width + this.getSlidesPadding();
-
-        // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
-        s.xReal = oldSlide.xReal;
-
-
-
-        s.x = (this.first().xReal - (s.xReal + w)) + this.first().x
-
-        // Atjaunojam move xoffsetu
-        s.setXOffset(oldSlide.xOffset);
-
-        s.updateCss();
-
-        this.slidesCount = this.slides.unshift(s);
-
-        this.executeSlideAddCallbacks(s.index, s.el);
-    },
-
-    /**
-     * Pievienojam slide masīva beigās
-     */
-    pushSlide: function(oldSlide) {
-
-        var s = new slide(oldSlide.el, this.nextIndex());
-        var w = this.last().width + this.getSlidesPadding();
-        
-        // DOM pozīcija nemainās neatkarīgi no tā kādā secībā elementi ir masīvā
-        s.xReal = oldSlide.xReal;
-
-        
-        s.x = ((this.last().xReal + w) - s.xReal) + this.last().x;
-
-        // Atjaunojam move xoffsetu
-        s.setXOffset(oldSlide.xOffset);
-        
-        s.updateCss();
-
-
-        this.slidesCount = this.slides.push(s);
-
-        this.executeSlideAddCallbacks(s.index, s.el);
     },
 
     /**
@@ -306,14 +264,40 @@ Slides.prototype = {
      * Pārvietojam pēdējo slaidu rindā uz rindas sākumu
      */
     moveLastToFirst: function() {
-        this.unshiftSlide(this.pop());
+        var slide = this.visualLast();
+
+        var firstSlide = this.visualFirst();
+
+        var w = slide.width + this.getSlidesPadding();
+
+        // Samazinām index. Reālo indekss neaiztiekam
+        slide.index = firstSlide.index - 1;
+
+        slide.x = (firstSlide.xReal - (slide.xReal + w)) + firstSlide.x
+
+        slide.updateCss();
+
+        this.executeSlideAddCallbacks(slide.index, slide.el);
     },
 
     /**
-     * Pārvietojam pirmo slaidu rindā uz rindas beigām
+     * Vizuāli pārvietojam pirmo slaid uz beigām
      */
     moveFirstToLast: function() {
-        this.pushSlide(this.shift());
+        var slide = this.visualFirst();
+
+        var lastSlide = this.visualLast();
+
+        var w = lastSlide.width + this.getSlidesPadding();
+        
+        // Palielinām index. Reālo indekss neaiztiekam
+        slide.index = lastSlide.index + 1;
+        
+        slide.x = ((lastSlide.xReal + w) - slide.xReal) + lastSlide.x;
+
+        slide.updateCss();
+
+        this.executeSlideAddCallbacks(slide.index, slide.el);
     },
 
     balanceSlides: function() {
@@ -361,6 +345,28 @@ Slides.prototype = {
         return this.conf.slidesPadding();
     },
 
+    /**
+     * Sakārtojam slaides pēc vizuālā izkārtojuma
+     */
+    getSortedVisual: function(direction) {
+        var r = [];
+        for (var i = 0; i < this.slidesCount; i++) {
+            r.push(this.slides[i]);
+        }
+
+        return r.sort(function(a, b){
+            if (a.getX() < b.getX()) {
+                return direction == 'asc' ? -1 : 1;
+            }
+            else if (a.getX() > b.getX()) {
+                return 0;
+            }
+            else if (a.getX() > b.getX()) {
+                return direction == 'asc' ? 1 : -1;
+            }
+        })
+    },
+
     isBetweenX: function(slide, x1, x2) {
         if (slide.getX() > x1 && slide.getX() < x2) {
             return true;
@@ -373,19 +379,14 @@ Slides.prototype = {
      */
     findBetweenX: function(x1, x2, searchDirection) {
 
-        if (searchDirection == 'asc') {
-            for (var i = 0; i < this.slides.length; i++) {
-                if (this.isBetweenX(this.slides[i], x1, x2)) {
-                    return this.slides[i];
-                }
+        // Meklējam pēc sakārtotiem pēc vizuālā izkārtojuma
+        var r = this.getSortedVisual(searchDirection);
+
+        for (var i = 0; i < r.length; i++) {
+            if (this.isBetweenX(r[i], x1, x2)) {
+                // Atgriežam slide instanci no īstā slides masīva
+                return this.slides[r[i].indexReal];
             }
-        }
-        else {
-            for (var i = this.slides.length-1; i >= 0; i--) {
-                if (this.isBetweenX(this.slides[i], x1, x2)) {
-                    return this.slides[i];
-                }
-            }   
         }
         
         return undefined;
@@ -414,6 +415,11 @@ Slides.prototype = {
         return r;
     },
 
+    /**
+     * Saskaitām cik lapās var sadalīt visus slaidus
+     * Lapa ir tad, kad to piepilda vairāki slaidi
+     * Lapā var būt 1 vai vairāki slaidi
+     */
     countPages: function() {
         if (this.slides.length == 0) {
             return 0;
@@ -421,15 +427,15 @@ Slides.prototype = {
 
         var r = 0;
         var t = 0;
-        var mthis = this;
-        this.slides.forEach(function(slide){
-            t += (slide.width + mthis.getSlidesPadding());
+        for (var i = 0; i < this.slidesCount; i++) {
+        
+            t += (this.slides[i].width + this.getSlidesPadding());
 
-            if (t >= mthis.viewport.width) {
+            if (t >= this.viewport.width) {
                 r++;
                 t = 0;
             }
-        })
+        }
 
         if (t > 0) {
             r++;

@@ -12,6 +12,15 @@ function slide(el, index, xs) {
 
     this.el = el;
     this.width = this.getWidth();
+    /**
+     * Šis ir reālais slide indekss. Ir ierobežots skaits ar slaidiem
+     */
+    this.indexReal = index;
+    /**
+     * Šis ir indekss, kad notiek bezgalīgā swaipošana. Slaidi tiek pārlikti viens aiz otra
+     * Līdz ar to indekss bezgalīgi palielinās. Jo tas slaids, kas bija pats pirmais vienā
+     * mirklī tiek pārvietos uz pašām beigām un šajā mirklī mainās slaida indekss
+     */
     this.index = index;
 
     // Reālā x pozīcija parent elementā
