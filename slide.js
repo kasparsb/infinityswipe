@@ -23,6 +23,9 @@ function slide(el, index, xs) {
      */
     this.index = index;
 
+    this.pageReal = 0;
+    this.page = 0;
+
     // Reālā x pozīcija parent elementā
     this.xReal = gv(xs, 'xReal', 0);
 

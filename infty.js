@@ -8,7 +8,7 @@ function createSwipe(el, $slides, conf) {
     var slides, stepper, viewportWidth = 0;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
-    var stepperDuration = 300;
+    var stepperDuration = 3000;
 
     // Pēc noklusējuma viss ir enbabled, bet ir iespēja uz mirkli atslēgt touch eventus
     var isEnabled = true;
@@ -295,6 +295,12 @@ function createSwipe(el, $slides, conf) {
         },
         prevSlide: function() {
             snapSlides('right', 0, true, false);
+        },
+        nextPage: function() {
+
+        },
+        prevPage: function() {
+
         },
         showSlide: function(index) {
             slides.showByIndex(index);

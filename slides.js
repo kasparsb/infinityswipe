@@ -44,9 +44,11 @@ Slides.prototype = {
             mthis.push(slide)
         })
 
+        this.addPageNumbers();
+
         this.balanceSlides();
 
-        this.pagesCountCallback(this.countPages());
+        this.pagesCountCallback(this.getMaxPage());
     },
 
     /**
@@ -404,11 +406,12 @@ Slides.prototype = {
      * Atrodam nākošo offsetX aiz norādītā x
      */
     findSlideOffsetXNextFrom: function(x) {
+        var sorted = this.getSortedVisual('asc');
         var r = undefined;
-        for (var i = 0; i < this.slides.length; i++) {
-            if (this.slides[i].getX() > x) {
-                if (typeof r == 'undefined' || this.slides[i].getX() < r) {
-                    r = this.slides[i].getX();
+        for (var i = 0; i < sorted.length; i++) {
+            if (sorted[i].getX() > x) {
+                if (typeof r == 'undefined' || sorted[i].getX() < r) {
+                    r = sorted[i].getX();
                 }
             }
         }
@@ -416,29 +419,36 @@ Slides.prototype = {
     },
 
     /**
-     * Saskaitām cik lapās var sadalīt visus slaidus
-     * Lapa ir tad, kad to piepilda vairāki slaidi
-     * Lapā var būt 1 vai vairāki slaidi
+     * Pievienojam katram slaid lapas numuru, kurā tas iekrīt
      */
-    countPages: function() {
-        if (this.slides.length == 0) {
-            return 0;
-        }
+    addPageNumbers: function() {
+        var page = 1, t = 0;
 
-        var r = 0;
-        var t = 0;
         for (var i = 0; i < this.slidesCount; i++) {
+
+            this.slides[i].pageReal = page;
         
             t += (this.slides[i].width + this.getSlidesPadding());
 
             if (t >= this.viewport.width) {
-                r++;
+                page++;
                 t = 0;
             }
         }
+    },
 
-        if (t > 0) {
-            r++;
+    /**
+     * Saskaitām cik lapās var sadalīt visus slaidus
+     * Lapa ir tad, kad to piepilda vairāki slaidi
+     * Lapā var būt 1 vai vairāki slaidi
+     */
+    getMaxPage: function() {
+        var r = 1;
+
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (this.slides[i].pageReal > r) {
+                r = this.slides[i].pageReal;
+            }
         }
 
         return r;
