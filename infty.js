@@ -47,7 +47,7 @@ function createSwipe(el, $slides, conf) {
         }
 
         // Pieglabājam current slide, no kura tika sākta kustība
-        startMoveSlide = slides.findFirstBetweenX(-1, viewportWidth);
+        startMoveSlide = getCurrent();
 
         slides.start();
         isMoveStarted = true;
@@ -82,6 +82,16 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
+        snapSlide(
+            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
+            getSlideToSnapByEndMove(d),
+            0,
+            d.isSwipe, 
+            d.touchedElement ? true : false
+        );
+    }
+
+    function getSlideToSnapByEndMove(d) {
         /**
          * Kāda daļa no pārbīdāmā slide jau ir pārbīdīta
          * Tas vajadzīgs, lai gadījumā ja tikai nedaudz pabīdīts, tad
@@ -91,39 +101,36 @@ function createSwipe(el, $slides, conf) {
          */
         var moveRatio = Math.abs(d.offset.x / startMoveSlide.width)
 
-        snapSlide(
-            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
-            (function(){
-                // Ja direction left, tad tuvāko slide labajai malai
-                if (d.direction == 'left') {
-                    if (d.isSwipe || moveRatio > 0.33333) {
-                        return slides.findClosestToXFromRight(0)
-                    }
-                    else {
-                        return slides.findClosestToXFromLeft(0)
-                    }
-                }
-                else {
-                    if (d.isSwipe || moveRatio > 0.33333) {
-                        return slides.findClosestToXFromLeft(0)
-                    }
-                    else {
-                        return slides.findClosestToXFromRight(0)   
-                    }
-                }
-            })(),
-
-            0,
-
-            d.isSwipe, 
-            d.touchedElement ? true : false
-        );
+        // Ja direction left, tad tuvāko slide labajai malai
+        if (d.direction == 'left') {
+            if (d.isSwipe || moveRatio > 0.33333) {
+                return slides.findClosestToXFromRight(0)
+            }
+            else {
+                return slides.findClosestToXFromLeft(0)
+            }
+        }
+        else {
+            if (d.isSwipe || moveRatio > 0.33333) {
+                return slides.findClosestToXFromLeft(0)
+            }
+            else {
+                return slides.findClosestToXFromRight(0)   
+            }
+        }
     }
 
     /**
      * Nofiksējam slide pret norādīto pozīciju
      */
     function snapSlide(slide, snapTarget, isSwipe, isTouch) {
+        if (typeof isSwipe == 'undefined') {
+            isSwipe = false;
+        }
+        if (typeof isTouch == 'undefined') {
+            isTouch = false;
+        }
+
         // Stepojam no slide.getX() uz snapTarget
         // Progress nosakām pēc slide width + this.getSlidesPadding()
         //var transitionWidth = slide.width + getSlidesPadding();
@@ -164,6 +171,18 @@ function createSwipe(el, $slides, conf) {
         if (typeof changeCb != 'undefined') {
             changeCb(params);
         }
+    }
+
+    function getCurrent() {
+        return slides.findFirstBetweenX(-1, viewportWidth);   
+    }
+
+    function getNext() {
+        return slides.findClosestToXFromRight(getCurrent().getX()+1);
+    }
+
+    function getPrev() {
+        return slides.findClosestToXFromLeft(getCurrent().getX()-1);
     }
 
     function getSwipeTarget() {
@@ -242,26 +261,10 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         nextSlide: function() {
-            // Virzienu nevajag zināt. Vajag padod tikai slide kuru nospnaot
-            //snapSlides('left', slides.findClosestToXFromRight(slides.findFirstBetweenX(-1, viewportWidth).getX()+1).getX(), true, false);
-
-            snapSlide(
-                slides.findClosestToXFromRight(slides.findFirstBetweenX(-1, viewportWidth).getX()+1),
-                0,
-                false,
-                false
-            )
+            snapSlide(getNext(), 0)
         },
         prevSlide: function() {
-            // Virzienu nevajag zināt. Vajag padod tikai slide kuru nospnaot
-            //snapSlides('right', slides.findClosestToXFromLeft(-1).getX(), true, false);
-
-            snapSlide(
-                slides.findClosestToXFromLeft(-1),
-                0,
-                false,
-                false
-            )
+            snapSlide(getPrev(), 0)
         },
         nextPage: function() {
 
@@ -272,17 +275,9 @@ function createSwipe(el, $slides, conf) {
         showSlide: function(index) {
             slides.showByIndex(index);
         },
-        getCurrent: function() {
-            return slides.findFirstBetweenX(-1, viewportWidth);
-        },
-        getNext: function() {
-            var s = slides.findFirstBetweenX(-1, viewportWidth);
-            return slides.getByIndex(s.index+1);
-        },
-        getPrev: function() {
-            var s = slides.findFirstBetweenX(-1, viewportWidth);
-            return slides.getByIndex(s.index-1);
-        },
+        getCurrent: getCurrent,
+        getNext: getNext,
+        getPrev: getPrev,
         getSlides: function() {
             return slides;
         },
