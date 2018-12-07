@@ -84,13 +84,21 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
+
         snapSlide(
             // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
             getSlideToSnapByEndMove(d),
             0,
             d.isSwipe, 
             d.touchedElement ? true : false,
-            Math.abs(d.offset.x) / viewportWidth
+
+            // Kāda ir manualMove distance
+            // kādas ir virziens
+            {
+                offset: Math.abs(d.offset.x),
+                direction: d.direction
+            }
+            
         );
     }
 
@@ -126,15 +134,12 @@ function createSwipe(el, $slides, conf) {
     /**
      * Nofiksējam slide pret norādīto pozīciju
      */
-    function snapSlide(slide, snapTarget, isSwipe, isTouch, moveEndProgress) {
+    function snapSlide(slide, snapTarget, isSwipe, isTouch, manualMove) {
         if (typeof isSwipe == 'undefined') {
             isSwipe = false;
         }
         if (typeof isTouch == 'undefined') {
             isTouch = false;
-        }
-        if (typeof moveEndProgress == 'undefined') {
-            moveEndProgress = 0;
         }
 
         slides.start();
@@ -145,21 +150,49 @@ function createSwipe(el, $slides, conf) {
          * Kad progress ir 1, tad tas offset ir attālums starp slide.getX un snapTarget
          */
         var targetOffset = snapTarget - slide.getX();
+        var targetDirection = targetOffset > 0 ? 'right' : 'left';
 
-        startProgress = 0;
-        console.log('snapslide slideMoveCb', moveEndProgress);
+        var startProgress = 0;
+        var pv = 0;
+        var slideMoveProgress = 0;
+
 
         stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
             
+            pv = progressToValue(progress, 0, targetOffset);
+
+            slides.setXOffset(pv);
 
             /**
-             * Te vajag aprēķināt direction
-             * Tā kā šis ir snapSlide, tas ir slide move automātiska pabeigšana
-             * tad vajag, lai progress būtu turpinājums sāktajai kustībai
+             * Ja snap slides notiek tajā pašā virzienā, kā bija move kustība, tad
+             * progresēja uz 1
+             * Ja snap slides notiek atpakaļ, tad progresējam uz 0
+             * SlideMoveCb vienmēr dodam progrss turpinājumu
+             * Tas progress, kad ir te ir cits - tas ir progress no 0 līdz vietai, kura vajag snap slide
+             * Tāpēc šeit savādāk rēķinām progresus
+             * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai 
+             * slaidi uztaisīt snap savā vietā
+             * Ja virzieni sakrīt (lietotāja move un slidesnap), tad progresējam
+             * Ja nē, tad regresējam atpakaļ uz sākumu
              */
-            slideMoveCb(validateProgress(moveEndProgress + progress), 'left', false);
+            if (manualMove) {
+                // Turpinām progresu, lai tas uzaug līdz 1, jo snap turpina tajā pašā virzienā
+                if (manualMove.direction == targetDirection) {
+                    slideMoveProgress = manualMove.offset + Math.abs(pv)
+                }
+                // Ejam atpakaļ uz izejas pozīciju, regresējam
+                else {
+                    slideMoveProgress = manualMove.offset + (-Math.abs(pv))
+                }
+                // Progress ir pārvietojums pret viewport platumu
+                slideMoveProgress = slideMoveProgress / viewportWidth;
+            }
+            // Kustība notiek bez manuāli iesāktas kustības
+            else {
+                slideMoveProgress = progress
+            }
 
-            slides.setXOffset(progressToValue(progress, 0, targetOffset));
+            slideMoveCb(slideMoveProgress, targetDirection, false);
 
         }, function() {
             slideSnapTransitionDone({
@@ -281,9 +314,11 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         nextSlide: function() {
+            slideMoveStartCb(false);
             snapSlide(getNext(), 0)
         },
         prevSlide: function() {
+            slideMoveStartCb(false);
             snapSlide(getPrev(), 0)
         },
         nextPage: function() {
