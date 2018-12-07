@@ -24,7 +24,7 @@
             top: 0;
             left: 0;
             
-            width: 100%;
+            width: 33.3333333%;
             height: 100%;
         }
         .navigation {
@@ -73,13 +73,23 @@
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
         <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
+        <div class="swipe__item"></div>
         
     </div>
 
     <div class="navigation">
         <a href="" class="navigation__nav navigation__restart">Restart</a>
-        <a href="" class="navigation__nav navigation__prev">Prev</a>
-        <a href="" class="navigation__nav navigation__next">Next</a>
+        <a href="" class="navigation__nav navigation__prev">Prev slide</a>
+        <a href="" class="navigation__nav navigation__next">Next slide</a>
+        <a href="" class="navigation__nav navigation__prevpage">Prev page</a>
+        <a href="" class="navigation__nav navigation__nextpage">Next page</a>
         <a href="" class="navigation__nav navigation__get-current">Get current</a>
         <a href="" class="navigation__nav navigation__get-next">Get next</a>
         <a href="" class="navigation__nav navigation__get-prev">Get prev</a>
@@ -133,12 +143,16 @@
             console.log('changed', api.getCurrent().index);
         })
 
+        api.onPagesCount(function(count){
+            console.log('pages', count);
+        });
+
         api.onSlideMove(function(progress, direction){
             console.log(progress, direction);
         })
 
         function addImage(index, el){
-            console.log('add', index);
+            //console.log('add', index);
             var imageIndex;
 
             if (index < 0) {
@@ -179,6 +193,18 @@
             ev.preventDefault();
 
             api.nextSlide();
+        })
+
+        $(document).on('click', '.navigation__prevpage', function(ev){
+            ev.preventDefault();
+
+            api.prevPage();
+        })
+
+        $(document).on('click', '.navigation__nextpage', function(ev){
+            ev.preventDefault();
+
+            api.nextPage();
         })
 
         $(document).on('click', '.navigation__get-current', function(ev){
