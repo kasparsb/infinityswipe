@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>Handle move</title>
+    <style>
+        body, html {
+            padding: 0;
+            margin: 0;
+        }
+        .nav {
+            max-width:740px;
+            margin: 10px auto 0;
+            position: relative;
+            height: 40px;
+        }
+        .nav__prev,
+        .nav__next {
+            top: 0;
+            position: absolute;
+            display: block;
+            width: 60px;
+            text-align: center;
+            height: 40px;
+            line-height: 40px;
+            background: gray;
+            color: white;
+        }
+        .nav__prev {
+            left: 0;
+        }
+        .nav__next {
+            right: 0;
+        }
+        .swipe {
+            max-width:740px;
+            height: 280px;
+            box-sizing: border-box;
+            margin: 0 auto;
+
+            border: 4px solid red;
+            border-left: 0;
+            border-right: 0;
+
+            position: relative;
+            flex: 1 1 auto;
+        }
+
+        .swipe__items {
+            display: flex;
+            align-items: stretch;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .swipe__item1 {
+            width: 38%;
+            margin-right: 0;
+            
+
+            flex: 0 0 auto;
+        }
+
+        .swipe__item2 {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            
+            background-size: cover;
+            background-position: center;
+            
+            font-size: 40px;
+            text-align: center;
+            color: #fff;
+        }
+        
+    </style>
+</head>
+<body>
+    <div style="display: flex;flex-wrap: wrap;align-items: center;padding:10px">
+        <div class="swipe">
+            <div class="swipe__items">
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2859/32924770393_384a76c13e.jpg)">1</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2901/33605527231_b6c94cac82.jpg)">2</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2832/32919038623_2c6eb8c023.jpg)">3</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)">4</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)">5</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)">6</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)">7</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2877/33613662191_09caa3f6a3.jpg)">4</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c1.staticflickr.com/3/2822/32918826513_3bc7b17908.jpg)">5</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3934/33582408212_5b9d226183.jpg)">6</div></div>
+                <div class="swipe__item1"><div class="swipe__item2" style="background-image:url(https://c2.staticflickr.com/4/3669/33737824555_2d8f446c36.jpg)">7</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="" class="nav__prev">prev</a>
+        <a href="" class="nav__next">next</a>
+    </div>
+
+    <script src="../build/infty.min.js"></script>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        
+        var navOpacity = 1;
+        var opacityDelta = 0;
+        var isMoveByTouch = false;
+
+        function validateOpacity(op) {
+            if (op < 0) {
+                 op = 0
+            }
+            if (op > 1) {
+                op = 1;
+            }
+            return op;
+        }
+
+        var api = new webit.infinitySwipe(
+            $('.swipe').get(0),
+            $('.swipe').find('.swipe__item1')
+        );
+        
+        api.onSlideMoveStart(function(isTouch){
+            opacityDelta = 0;
+            isMoveByTouch = isTouch;
+        })
+
+        api.onSlideMove(function(progres, direction, isTouch){
+            console.log(isTouch);
+            if (!isMoveByTouch) {
+                if (!isTouch) {
+                    return;
+                }
+            }
+            
+
+            opacityDelta = 0.6*progres;
+
+            $('.nav').css({
+                opacity: validateOpacity(navOpacity - opacityDelta)
+            })
+
+            console.log('move', progres, isTouch);
+        })
+
+        api.onChange(function(){
+            isMoveByTouch = false;
+
+            navOpacity = validateOpacity(navOpacity - opacityDelta);
+
+
+            console.log('onchange', opacityDelta, navOpacity);
+        })
+
+        $(document).on('click', '.nav__prev', function(ev){
+            ev.preventDefault();
+
+            api.prevSlide();
+        })
+
+        $(document).on('click', '.nav__next', function(ev){
+            ev.preventDefault();
+            
+            api.nextSlide();
+        })
+
+
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@ var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
-    var slideAddCb, changeCb, pagesCountCb, slideMoveCb = function(){};
+    var slideAddCb, changeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){};
     var slides, stepper, viewportWidth = 0, startMoveSlide;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -37,7 +37,7 @@ function createSwipe(el, $slides, conf) {
         stepper = new Stepper();
     }
 
-    function startMove(c) {
+    function startMove(d) {
         if (!isEnabled) {
             return;
         }
@@ -51,6 +51,8 @@ function createSwipe(el, $slides, conf) {
 
         slides.start();
         isMoveStarted = true;
+
+        slideMoveStartCb(d.touchedElement ? true : false);
     }
 
     function handleMove(d) {    
@@ -66,7 +68,7 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
-        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction);
+        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction, d.touchedElement ? true : false);
 
         slides.setXOffset(d.offset.x);
     }
@@ -87,7 +89,8 @@ function createSwipe(el, $slides, conf) {
             getSlideToSnapByEndMove(d),
             0,
             d.isSwipe, 
-            d.touchedElement ? true : false
+            d.touchedElement ? true : false,
+            Math.abs(d.offset.x) / viewportWidth
         );
     }
 
@@ -123,23 +126,18 @@ function createSwipe(el, $slides, conf) {
     /**
      * Nofiksējam slide pret norādīto pozīciju
      */
-    function snapSlide(slide, snapTarget, isSwipe, isTouch) {
+    function snapSlide(slide, snapTarget, isSwipe, isTouch, moveEndProgress) {
         if (typeof isSwipe == 'undefined') {
             isSwipe = false;
         }
         if (typeof isTouch == 'undefined') {
             isTouch = false;
         }
-
-        // Stepojam no slide.getX() uz snapTarget
-        // Progress nosakām pēc slide width + this.getSlidesPadding()
-        //var transitionWidth = slide.width + getSlidesPadding();
-        //var transitionWidth = viewportWidth;
-
+        if (typeof moveEndProgress == 'undefined') {
+            moveEndProgress = 0;
+        }
 
         slides.start();
-
-        startProgress = 0;
 
         /**
          * Aprēķinām kādu vajag offset, lai pārvietotos no getX uz snapTarget
@@ -148,9 +146,18 @@ function createSwipe(el, $slides, conf) {
          */
         var targetOffset = snapTarget - slide.getX();
 
+        startProgress = 0;
+        console.log('snapslide slideMoveCb', moveEndProgress);
+
         stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
-            // Te vajag aprēķināt direction
-            slideMoveCb(progress, 'left');
+            
+
+            /**
+             * Te vajag aprēķināt direction
+             * Tā kā šis ir snapSlide, tas ir slide move automātiska pabeigšana
+             * tad vajag, lai progress būtu turpinājums sāktajai kustībai
+             */
+            slideMoveCb(validateProgress(moveEndProgress + progress), 'left', false);
 
             slides.setXOffset(progressToValue(progress, 0, targetOffset));
 
@@ -165,6 +172,16 @@ function createSwipe(el, $slides, conf) {
     function progressToValue(progress, fromValue, toValue) {
         var w = fromValue - toValue;
         return fromValue - (w * progress);
+    }
+
+    function validateProgress(p) {
+        if (p < 0) {
+            p = 0;
+        }
+        if (p > 1) {
+            p = 1;
+        }
+        return p;
     }
 
     function slideSnapTransitionDone(params) {
@@ -249,6 +266,9 @@ function createSwipe(el, $slides, conf) {
         },
         onPagesCount: function(cb) {
             pagesCountCb = cb;
+        },
+        onSlideMoveStart: function(cb) {
+            slideMoveStartCb = cb
         },
         /**
          * Slide kustība. Lai var slide kustību sinhronizēt
