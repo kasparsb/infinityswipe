@@ -24,7 +24,7 @@
             text-align: center;
             height: 40px;
             line-height: 40px;
-            background: gray;
+            background: black;
             color: white;
         }
         .nav__prev {
@@ -55,7 +55,7 @@
         }
 
         .swipe__item1 {
-            width: 38%;
+            width: 100%;
             margin-right: 0;
             
 
@@ -120,6 +120,12 @@
             return op;
         }
 
+        function setNavOpacity(v) {
+            $('.nav').css({
+                opacity: v
+            })
+        }
+
         var api = new webit.infinitySwipe(
             $('.swipe').get(0),
             $('.swipe').find('.swipe__item1')
@@ -131,40 +137,37 @@
         })
 
         api.onSlideMove(function(progres, direction, isTouch){
-            console.log(isTouch);
+
             if (!isMoveByTouch) {
                 if (!isTouch) {
                     return;
                 }
             }
             
-
-            opacityDelta = 0.6*progres;
-
-            $('.nav').css({
-                opacity: validateOpacity(navOpacity - opacityDelta)
-            })
-
-            console.log('move', progres, isTouch);
+            opacityDelta = 0.9*progres;
+            setNavOpacity(validateOpacity(navOpacity - opacityDelta))
         })
 
         api.onChange(function(){
+            if (isMoveByTouch) {
+                navOpacity = validateOpacity(navOpacity - opacityDelta);    
+            }
+
             isMoveByTouch = false;
-
-            navOpacity = validateOpacity(navOpacity - opacityDelta);
-
-
-            console.log('onchange', opacityDelta, navOpacity);
         })
 
         $(document).on('click', '.nav__prev', function(ev){
             ev.preventDefault();
+            navOpacity = 1;
+            setNavOpacity(navOpacity);
 
             api.prevSlide();
         })
 
         $(document).on('click', '.nav__next', function(ev){
             ev.preventDefault();
+            navOpacity = 1;
+            setNavOpacity(navOpacity);
             
             api.nextSlide();
         })
