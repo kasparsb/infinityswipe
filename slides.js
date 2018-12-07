@@ -100,18 +100,39 @@ Slides.prototype = {
      *
      */
     showByIndex: function(index) {
-        this.slides = [];
+        this.start();
 
-        var mthis = this;
+        var realIndex = index % this.slidesCount;
 
-        this.slidesElements.each(function(slide, i){
-            if (i == 0) {
-                mthis.pushWithIndex(slide, index)
+        var fi;
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (this.slides[i].indexReal == realIndex) {
+                fi = i;
+                break;
             }
-            else {
-                mthis.push(slide)
+        }
+
+        // Daram slideCount reizes
+        var w = 0;
+        for (var i = 0; i < this.slidesCount; i++) {
+            this.slides[fi].x = -1*this.slides[fi].xReal;
+            this.slides[fi].x = this.slides[fi].x + w;
+            
+            this.slides[fi].index = index;
+            this.slides[fi].updateCss();
+            this.executeSlideAddCallbacks(this.slides[fi].index, this.slides[fi].el);
+
+
+            w += this.slides[fi].width + this.getSlidesPadding();
+
+            fi++;
+            index++;
+
+            // Metam ripā
+            if (fi == this.slidesCount) {
+                fi = 0;
             }
-        })
+        }
 
         this.balanceSlides();
     },
@@ -225,7 +246,6 @@ Slides.prototype = {
     },
 
     pushWithIndex: function(el, index) {
-
         var s = new slide(el, index, {
             // Saglabājam reālo x pozīciju
             xReal: this.nextXReal()
