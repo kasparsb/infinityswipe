@@ -224,7 +224,7 @@ function createSwipe(el, $slides, conf) {
     }
 
     function getCurrent() {
-        return slides.findFirstBetweenX(-1, viewportWidth);   
+        return slides.findFirstBetweenX(-1, viewportWidth);
     }
 
     function getNext() {
@@ -232,7 +232,7 @@ function createSwipe(el, $slides, conf) {
     }
 
     function getPrev() {
-        return slides.findClosestToXFromLeft(getCurrent().getX()-1);
+        return slides.findClosestToXFromLeft(getCurrent().getX() - 1);
     }
 
     function getSwipeTarget() {

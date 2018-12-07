@@ -78,32 +78,35 @@ Slides.prototype = {
 
         /**
          *
-         *
-         *
          * @todo Varbūt vajag kaut kā inteliģentāk pārrēķināt
-         *
-         *
+         * Jāņem vērā tekošais slides index
+         * jo lietotājs var būt aizskrolējis ļoti tālu
          *
          */
         this.reset();
 
     },
 
-    
     /**
+     * Rādām slide ar padoto index
+     * tākā šis ir infinity slide, tad attiecīgi index var būt jebkāds
+     * padotais index tiek pārrēķināts uz reālo slide index. Jo slides
+     * skaits ir ierobežots un tie tiek reused
      *
-     *
-     *
-     * @todo Pārskatīt. Vai tiešām vajag skatīties pēc reālo elementu index
-     *
-     *
-     *
+     * Fiziski pārvietojam padoto index uz sākumu. 
+     * Visus pārējs slides pakārtojam padotajam slide index
      */
     showByIndex: function(index) {
+        // Sagatvojas slide priekš pārvietošanas
         this.start();
 
+        // Pēc padotā index atrodam reālo slide index
         var realIndex = index % this.slidesCount;
 
+        /**
+         * Tagad meklējam slide, kuram atbilst realIndex un 
+         * pieglabājam slide indeksu masīvā
+         */
         var fi;
         for (var i = 0; i < this.slidesCount; i++) {
             if (this.slides[i].indexReal == realIndex) {
@@ -112,23 +115,30 @@ Slides.prototype = {
             }
         }
 
-        // Daram slideCount reizes
-        var w = 0;
+        /**
+         * Norādīto slide liekam kā pašu pirmo vizuāli.
+         * Visus slides, kas ir aiz tā izkārtojam secīgi
+         */
+        var xOffset = 0;
         for (var i = 0; i < this.slidesCount; i++) {
-            this.slides[fi].x = -1*this.slides[fi].xReal;
-            this.slides[fi].x = this.slides[fi].x + w;
-            
+            this.slides[fi].x = (-this.slides[fi].xReal) + xOffset;
             this.slides[fi].index = index;
+
+            // Palielinām par slide platumu + padding
+            xOffset += this.slides[fi].width + this.getSlidesPadding();
+
+            // Atjaunojam css un izpildām callabacks
             this.slides[fi].updateCss();
             this.executeSlideAddCallbacks(this.slides[fi].index, this.slides[fi].el);
 
-
-            w += this.slides[fi].width + this.getSlidesPadding();
-
-            fi++;
+            // Visiem slaidiem pielabojam indekss secīgi
             index++;
 
-            // Metam ripā
+            /**
+             * Pārejam pie nākošā slide. Kad sasniegtas masīva beigas, tad 
+             * metam ripā un sākam no masīva sākuma
+             */
+            fi++;
             if (fi == this.slidesCount) {
                 fi = 0;
             }
@@ -420,7 +430,7 @@ Slides.prototype = {
     findClosestToXFromLeft: function(x) {
         var r;
         for (var i = 0; i < this.slidesCount; i++) {
-            // Izlaišam visus, kas ir lielāki par x
+            // Izlaižam visus, kas ir lielāki par x
             if (this.slides[i].getX() > x) {
                 continue;
             }
