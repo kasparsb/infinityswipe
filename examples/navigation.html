@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
     <title>Navigation</title>
     <style>
+        body {
+            counter-reset: section -1;
+        }
         .swipe {
             max-width: 500px;
             height: 280px;
@@ -30,6 +33,11 @@
             text-align: center;
             color: #fff;
             font-size: 24px;
+        }
+        .swipe__item:after {
+            counter-increment: section;
+            content: " - "counter(section);
+            color: red;
         }
         .navigation {
             overflow: hidden;
@@ -234,8 +242,6 @@
         })
 
         $(document).on('change', '.navigation__set-x select', function(ev){
-            
-            console.log('setx', parseInt(ev.target.value, 10))
             api.showSlide(parseInt(ev.target.value, 10))
         })
     </script>
