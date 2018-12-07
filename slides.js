@@ -445,10 +445,13 @@ Slides.prototype = {
         for (var i = 0; i < this.slidesCount; i++) {
 
             this.slides[i].pageReal = page;
+            this.slides[i].page = page;
         
             t += (this.slides[i].width + this.getSlidesPadding());
 
-            if (t >= this.viewport.width) {
+            // Nedaudz smaziām viewport platumu, lai lapā netiktu ieskaitīts
+            // slide, kuram tikai daži pikseļi ir lapā
+            if (t >= this.viewport.width - 4) {
                 page++;
                 t = 0;
             }
