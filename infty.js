@@ -34,7 +34,9 @@ function createSwipe(el, $slides, conf) {
     }
 
     function initStepper() {
-        stepper = new Stepper();
+        stepper = new Stepper({
+            bezierCurve: stepperCurve
+        });
     }
 
     function startMove(d) {
@@ -156,49 +158,52 @@ function createSwipe(el, $slides, conf) {
         var pv = 0;
         var slideMoveProgress = 0;
 
-
-        stepper.runFrom(startProgress, stepperDuration, stepperCurve, function(progress){
+        stepper.runFrom(startProgress, {
+            duration: stepperDuration,
+            onStep: function(progress){
             
-            pv = progressToValue(progress, 0, targetOffset);
+                pv = progressToValue(progress, 0, targetOffset);
 
-            slides.setXOffset(pv);
+                slides.setXOffset(pv);
 
-            /**
-             * Ja snap slides notiek tajā pašā virzienā, kā bija move kustība, tad
-             * progresēja uz 1
-             * Ja snap slides notiek atpakaļ, tad progresējam uz 0
-             * SlideMoveCb vienmēr dodam progrss turpinājumu
-             * Tas progress, kad ir te ir cits - tas ir progress no 0 līdz vietai, kura vajag snap slide
-             * Tāpēc šeit savādāk rēķinām progresus
-             * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai 
-             * slaidi uztaisīt snap savā vietā
-             * Ja virzieni sakrīt (lietotāja move un slidesnap), tad progresējam
-             * Ja nē, tad regresējam atpakaļ uz sākumu
-             */
-            if (manualMove) {
-                // Turpinām progresu, lai tas uzaug līdz 1, jo snap turpina tajā pašā virzienā
-                if (manualMove.direction == targetDirection) {
-                    slideMoveProgress = manualMove.offset + Math.abs(pv)
+                /**
+                 * Ja snap slides notiek tajā pašā virzienā, kā bija move kustība, tad
+                 * progresēja uz 1
+                 * Ja snap slides notiek atpakaļ, tad progresējam uz 0
+                 * SlideMoveCb vienmēr dodam progrss turpinājumu
+                 * Tas progress, kad ir te ir cits - tas ir progress no 0 līdz vietai, kura vajag snap slide
+                 * Tāpēc šeit savādāk rēķinām progresus
+                 * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai 
+                 * slaidi uztaisīt snap savā vietā
+                 * Ja virzieni sakrīt (lietotāja move un slidesnap), tad progresējam
+                 * Ja nē, tad regresējam atpakaļ uz sākumu
+                 */
+                if (manualMove) {
+                    // Turpinām progresu, lai tas uzaug līdz 1, jo snap turpina tajā pašā virzienā
+                    if (manualMove.direction == targetDirection) {
+                        slideMoveProgress = manualMove.offset + Math.abs(pv)
+                    }
+                    // Ejam atpakaļ uz izejas pozīciju, regresējam
+                    else {
+                        slideMoveProgress = manualMove.offset + (-Math.abs(pv))
+                    }
+                    // Progress ir pārvietojums pret viewport platumu
+                    slideMoveProgress = slideMoveProgress / viewportWidth;
                 }
-                // Ejam atpakaļ uz izejas pozīciju, regresējam
+                // Kustība notiek bez manuāli iesāktas kustības
                 else {
-                    slideMoveProgress = manualMove.offset + (-Math.abs(pv))
+                    slideMoveProgress = progress
                 }
-                // Progress ir pārvietojums pret viewport platumu
-                slideMoveProgress = slideMoveProgress / viewportWidth;
-            }
-            // Kustība notiek bez manuāli iesāktas kustības
-            else {
-                slideMoveProgress = progress
-            }
 
-            slideMoveCb(slideMoveProgress, targetDirection, false);
+                slideMoveCb(slideMoveProgress, targetDirection, false);
 
-        }, function() {
-            slideSnapTransitionDone({
-                isSwipe: isSwipe, 
-                isTouch: isTouch
-            });
+            }, 
+            onDone: function() {
+                slideSnapTransitionDone({
+                    isSwipe: isSwipe, 
+                    isTouch: isTouch
+                });
+            }
         })
     }
 
