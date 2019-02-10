@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "swipe": "git+https://github.com/kasparsb/swipe.git",
-    "stepper": "git+https://github.com/kasparsb/stepper.git"
+    "stepper": "git+https://github.com/kasparsb/stepper.git#v1.4.1"
   }
 }
