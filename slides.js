@@ -180,6 +180,7 @@ Slides.prototype = {
 
     /**
      * Atgriežam slide, kurš vizuāli ir pats pēdējais
+     * Vizuāli pret viewport
      */
     visualLast: function() {
         var r = 0;
@@ -333,6 +334,10 @@ Slides.prototype = {
     },
 
     balanceSlides: function() {
+
+        if (!this.conf.rotateItems) {
+            return;
+        }
 
         // Balansējam tikai, ja viewport.width > 0
         if (this.viewport.width <= 0) {

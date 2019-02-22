@@ -60,6 +60,13 @@ slide.prototype = {
     getX: function() {
         return this.xReal + this.x + this.xOffset;
     },
+    /**
+     * @todo Vajag pārsaukt loģiskāk
+     * te tiek atgriezta x pozīcija bez offsetX vērtības
+     */
+    getX2: function() {
+        return this.xReal + this.x;
+    },
     start: function() {
         // Nofiksējam rēalo x nobīdi
         this.x = this.x + this.xOffset;
