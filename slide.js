@@ -61,10 +61,13 @@ slide.prototype = {
         return this.xReal + this.x + this.xOffset;
     },
     /**
-     * @todo Vajag pārsaukt loģiskāk
-     * te tiek atgriezta x pozīcija bez offsetX vērtības
+     * Tas pats, kas getX, tikai bez move offset
+     * Tā ir x pozīcija pirms notika slide move darbība
+     * Kamēr notiek move kūstība tiek mainīts offsetX un tas
+     * tiek pielikts pie slide x pozīcijas.
+     * Šis x ir tāds, ja kustība nebūtu bijusi
      */
-    getX2: function() {
+    getXWithoutOffset: function() {
         return this.xReal + this.x;
     },
     start: function() {

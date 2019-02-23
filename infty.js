@@ -11,7 +11,6 @@ function createSwipe(el, $slides, conf) {
     var stepperDuration = 300;
 
     var rotateItems = getRotateItems();
-    console.log('rotateItems', rotateItems);
 
     // Pēc noklusējuma viss ir enbabled, bet ir iespēja uz mirkli atslēgt touch eventus
     var isEnabled = true;
@@ -86,6 +85,9 @@ function createSwipe(el, $slides, conf) {
          */
         if (!rotateItems) {
             slides.setXOffset(
+                // Aprēķinām kāds ir slide out platums un to bremzējam
+                // lai iegūtu elastic swipe efektu
+                // bremzējam tikai slide out vērtību
                 d.offset.x - getSlideOutXWidth(d.offset.x)*0.75
             );
         }
@@ -105,13 +107,9 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
-        var slideToSnap = getSlideToSnapByEndMove(d);
-
         snapSlide(
-            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
-            slideToSnap,
-            
-            getSlideSnapTarget(slideToSnap),
+            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot    
+            getSnapTarget(getSlideToSnapByEndMove(d)),
 
             d.isSwipe, 
             d.touchedElement ? true : false,
@@ -122,7 +120,6 @@ function createSwipe(el, $slides, conf) {
                 offset: Math.abs(d.offset.x),
                 direction: d.direction
             }
-            
         );
     }
 
@@ -153,7 +150,7 @@ function createSwipe(el, $slides, conf) {
         
         var x = slides.first().getX();
         if (typeof offsetX != 'undefined') {
-            x = slides.first().getX2() + offsetX;    
+            x = slides.first().getXWithoutOffset() + offsetX;    
         }
         
         if (x > 0) {
@@ -170,53 +167,13 @@ function createSwipe(el, $slides, conf) {
 
         var x = r.getX() + r.width;
         if (typeof offsetX != 'undefined') {
-            x = r.getX2() + r.width + offsetX;
+            x = r.getXWithoutOffset() + r.width + offsetX;
         }
 
         if (x <  viewportWidth) {
             return viewportWidth - x;
         }
         return 0;
-    }
-
-    /**
-     * Atgriež x pozīciju uz kuru snapot
-     * padoto slide. Ja slide vajag snapot pret  
-     * lano malu, tad snap target būs 0
-     * Ja vajag pret kreiso malu, tad viewportWidth - slide.width
-     *
-     * Te tiek ņemta vērā rotateItems pazīme, pēc tās tiek noteiks
-     * vai snapot uz kreiso vai labo pusi
-     *
-     * Jāņem vērā vai snap uz norādīto target neuztaisīs slideOut
-     * gadījumu. Ja tā ir, tad vajag piekoriģēt snapTarget, lai tā
-     * nenotiku
-     */
-    function getSlideSnapTarget(slideToSnap) {
-        if (!rotateItems) {
-            // Snap uz labo pusi
-            if (isLastSlideOut()) {
-                return viewportWidth - slides.last().width
-            }
-
-            if (isFirstSlideOut()) {
-                return 0;
-            }
-
-            // Jāsāk pārbaudīt vai snapojot slide uz 0
-            // netiks uztaisīt slide out situcācij
-
-            // Pēc noklusējuma snapojam slide uz 0 pozīciju
-            var d = (slides.last().getX() + slides.last().width) - viewportWidth;
-            
-            console.log('snap', d, slideToSnap.getX(), slideToSnap.getX() - d);
-
-            return Math.max(0, slideToSnap.getX() - d);
-
-        }
-        else {
-            return 0;
-        }
     }
 
     function getSlideToSnapByEndMove(d) {
@@ -267,9 +224,83 @@ function createSwipe(el, $slides, conf) {
     }
 
     /**
-     * Nofiksējam slide pret norādīto pozīciju
+     * Atgriež x, y pozīciju uz kuru snapot
+     * padoto slide. Ja slide vajag snapot pret  
+     * lano malu, tad snap target būs 0
+     * Ja vajag pret kreiso malu, tad viewportWidth - slide.width
+     *
+     * Te tiek ņemta vērā rotateItems pazīme, pēc tās tiek noteiks
+     * vai snapot uz kreiso vai labo pusi
+     *
+     * Jāņem vērā vai snap uz norādīto target neuztaisīs slideOut
+     * gadījumu. Ja tā ir, tad vajag piekoriģēt snapTarget, lai tā
+     * nenotiku
      */
-    function snapSlide(slide, snapTarget, isSwipe, isTouch, manualMove) {
+    function getSlideSnapPosition(slideToSnap) {
+        /**
+         * By default snapojam slide kreiso malu 
+         * pie viewport kreisās malas
+         *
+         * @todo Uztaisīt, lai var nodefinēt pret kuru 
+         * malu snapot slide
+         */
+        if (rotateItems) {
+            return {
+                x: 0,
+                y: undefined
+            }
+        }
+
+        /**
+         * Slides netiek rotēti, šeit jāsāk pārbaudīt
+         * gadījumi, kad pirmais vai pēdējais slide iet
+         * ārpus viewport dimensijām
+         */
+        if (isLastSlideOut()) {
+            // Pēdējā slide labajai malai ir jānostājas līdz ar viewport labo malu
+            return {
+                x: viewportWidth - slides.last().width,
+                y: undefined
+            }
+        }
+
+        if (isFirstSlideOut()) {
+            // Pirmā slide kreisā mala pret viewport kreiso malu
+            return {
+                x: 0,
+                y: undefined
+            }
+        }
+
+        /**
+         * Jāpārbauda vai pēc slide snap netiks uztaisīt 
+         * slide out situācija
+         *
+         * Šādi parasti notiek ar pēdējo slide
+         * @todod bet vajag uztaisīt check arī uz pirmo slide
+         */
+
+        // Pēc noklusējuma snapojam slide uz 0 pozīciju
+        var d = (slides.last().getX() + slides.last().width) - viewportWidth;
+        
+        return {
+            x: Math.max(0, slideToSnap.getX() - d),
+            y: undefined
+        }
+    }
+
+    function getSnapTarget(slide) {
+        return {
+            slide: slide,
+            to: getSlideSnapPosition(slide)
+        }
+    }
+
+    /**
+     * Nofiksējam target.slide pret norādīto target.to.x pozīciju
+     */
+    function snapSlide(target, isSwipe, isTouch, manualMove) {
+
         if (typeof isSwipe == 'undefined') {
             isSwipe = false;
         }
@@ -280,11 +311,11 @@ function createSwipe(el, $slides, conf) {
         slides.start();
 
         /**
-         * Aprēķinām kādu vajag offset, lai pārvietotos no getX uz snapTarget
+         * Aprēķinām kādu vajag offset, lai pārvietotos no getX uz target.to.x
          * Kad progress ir 0, tad offset atteicīgi arī ir 0
-         * Kad progress ir 1, tad tas offset ir attālums starp slide.getX un snapTarget
+         * Kad progress ir 1, tad tas offset ir attālums starp target.slide.getX un target.to.x
          */
-        var targetOffset = snapTarget - slide.getX();
+        var targetOffset = target.to.x - target.slide.getX();
         var targetDirection = targetOffset > 0 ? 'right' : 'left';
 
         var startProgress = 0;
@@ -467,11 +498,17 @@ function createSwipe(el, $slides, conf) {
         },
         nextSlide: function() {
             slideMoveStartCb(false);
-            snapSlide(getNext(), 0)
+
+            if (getNext()) {
+                snapSlide(getSnapTarget(getNext()));
+            }
         },
         prevSlide: function() {
             slideMoveStartCb(false);
-            snapSlide(getPrev(), 0)
+
+            if (getPrev()) {
+                snapSlide(getSnapTarget(getPrev()));
+            }
         },
         nextPage: function() {
 
