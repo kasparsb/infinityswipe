@@ -107,6 +107,14 @@ function createSwipe(el, $slides, conf) {
 
         isMoveStarted = false;
 
+        /**
+         * Pārbaudām vai ir offset. Ja ir bijis tikai click, tad
+         * offset nebūs. Šādu endMove ignorējam
+         */
+        if (!d.offset) {
+            return;
+        }
+
         snapSlide(
             // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot    
             getSnapTarget(getSlideToSnapByEndMove(d)),
