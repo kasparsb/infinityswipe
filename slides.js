@@ -322,7 +322,7 @@ Slides.prototype = {
 
         slide.updateCss();
 
-        this.executeSlideAddCallbacks(slide.index, slide.el);
+        this.executeSlideAddCallbacks(slide.index, slide.el, slide);
     },
 
     /**
