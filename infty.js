@@ -454,9 +454,9 @@ function createSwipe(el, $slides, conf) {
         return true;
     }
 
-    function handleSlideAdd(index, el) {
+    function handleSlideAdd(index, el, slide) {
         if (slideAddCb) {
-            slideAddCb(index, el);
+            slideAddCb(index, el, slide);
         }
     }
 
