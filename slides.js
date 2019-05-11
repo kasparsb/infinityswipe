@@ -135,7 +135,7 @@ Slides.prototype = {
 
             // Atjaunojam css un izpildām callabacks
             this.slides[fi].updateCss();
-            this.executeSlideAddCallbacks(this.slides[fi].index, this.slides[fi].el);
+            this.executeSlideAddCallbacks(this.slides[fi].index, this.slides[fi].el, this.slides[fi]);
 
             // Visiem slaidiem pielabojam indekss secīgi
             index++;
@@ -275,7 +275,7 @@ Slides.prototype = {
 
         s.updateCss();
 
-        this.executeSlideAddCallbacks(this.last().index, this.last().el);
+        this.executeSlideAddCallbacks(this.last().index, this.last().el, this.last());
     },
 
     /**
@@ -342,7 +342,7 @@ Slides.prototype = {
 
         slide.updateCss();
 
-        this.executeSlideAddCallbacks(slide.index, slide.el);
+        this.executeSlideAddCallbacks(slide.index, slide.el, slide);
     },
 
     balanceSlides: function(onChangeCb) {

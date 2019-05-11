@@ -34,6 +34,9 @@ function slide(el, index, xs) {
 
     // Handle move offseti
     this.xOffset = gv(xs, 'xOffset', 0);
+
+    // Custom data
+    this.customData = {};
 }
 
 slide.prototype = {
@@ -76,6 +79,19 @@ slide.prototype = {
 
         // Temp x offsetu nonullējam
         this.xOffset = 0;
+    },
+
+    resetData: function() {
+        this.customData = {}
+    },
+    setData: function(propName, value) {
+        this.customData[propName] = value
+    },
+    getData: function(propName, defaultValue) {
+        if (typeof this.customData[propName] == 'undefined') {
+            return defaultValue
+        }
+        return this.customData[propName]
     }
 }
 
