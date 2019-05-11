@@ -19,6 +19,11 @@ var Slides = function(slides, viewportWidth, conf) {
         this.slideAddCallbacks.push(this.conf.onSlideAdd)
     }
 
+    this.changeCallbacks = [];
+    if (this.conf && this.conf.onSlidesChange) {
+        this.changeCallbacks.push(this.conf.onSlidesChange)
+    }
+
     this.slidesElements = new elementsCollection(slides);
 
     this.setViewportWidth(viewportWidth);
@@ -49,6 +54,7 @@ Slides.prototype = {
         this.balanceSlides();
 
         this.pagesCountCallback(this.getMaxPage());
+        this.executeChangeCallbacks(this.slides);
     },
 
     /**
@@ -144,7 +150,10 @@ Slides.prototype = {
             }
         }
 
-        this.balanceSlides();
+        var mthis = this;
+        this.balanceSlides(function(){
+            mthis.executeChangeCallbacks(mthis.slides);
+        });
     },
 
     /**
@@ -290,7 +299,10 @@ Slides.prototype = {
         }
 
 
-        this.balanceSlides();
+        var mthis = this;
+        this.balanceSlides(function(){
+            mthis.executeChangeCallbacks(mthis.slides);
+        });
     },
 
     /**
@@ -333,7 +345,7 @@ Slides.prototype = {
         this.executeSlideAddCallbacks(slide.index, slide.el);
     },
 
-    balanceSlides: function() {
+    balanceSlides: function(onChangeCb) {
 
         if (!this.conf.rotateItems) {
             return;
@@ -370,11 +382,20 @@ Slides.prototype = {
         for (var i = 0; i < d; i++) {
             this[method]();
         }
+        if (d > 0 && onChangeCb) {
+            onChangeCb();
+        }
     },
 
     executeSlideAddCallbacks: function() {
         for (var i = 0; i < this.slideAddCallbacks.length; i++) {
             this.slideAddCallbacks[i].apply(this, arguments);
+        }
+    },
+
+    executeChangeCallbacks: function() {
+        for (var i = 0; i < this.changeCallbacks.length; i++) {
+            this.changeCallbacks[i].apply(this, arguments);
         }
     },
 

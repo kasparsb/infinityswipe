@@ -4,7 +4,7 @@ var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
-    var slideAddCb, changeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){};
+    var slideAddCb, changeCb, slidesChangeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){};
     var slides, stepper, viewportWidth = 0, startMoveSlide;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -25,6 +25,7 @@ function createSwipe(el, $slides, conf) {
     function initSlides() {
         slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd,
+            onSlidesChange: handleSlidesChange,
             slidesPadding: getSlidesPadding,
             positionItems: getPositionItems(),
             rotateItems: getRotateItems(),
@@ -459,6 +460,12 @@ function createSwipe(el, $slides, conf) {
         }
     }
 
+    function handleSlidesChange(slides) {
+        if (slidesChangeCb) {
+            slidesChangeCb(slides)
+        }
+    }
+
     function setIsEnabled(s) {
         isEnabled = s;
     }
@@ -484,6 +491,9 @@ function createSwipe(el, $slides, conf) {
     return {
         onSlideAdd: function(cb) {
             slideAddCb = cb;
+        },
+        onSlidesChange: function(cb){
+            slidesChangeCb = cb;
         },
         onChange: function(cb) {
             changeCb = cb;
