@@ -10,13 +10,18 @@ function createSwipe(el, $slides, conf) {
     var stepperCurve = [0,0,.12,1];
     var stepperDuration = 300;
 
+    var swipeConfig = {
+        'direction': 'horizontal',
+        'fireMoveOnRequestAnimationFrame': true
+    }
+
     var rotateItems = getRotateItems();
 
     // Pēc noklusējuma viss ir enbabled, bet ir iespēja uz mirkli atslēgt touch eventus
     var isEnabled = true;
 
     function initSwipe() {
-        new Swipe(getSwipeTarget(), {'direction': 'horizontal'})
+        new Swipe(getSwipeTarget(), swipeConfig)
             .on('start', startMove)
             .on('move', handleMove)
             .on('touchend', endMove) 
