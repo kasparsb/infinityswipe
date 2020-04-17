@@ -425,7 +425,7 @@ function createSwipe(el, $slides, conf) {
     }
 
     function getCurrent() {
-        return slides.findFirstBetweenX(-1, viewportWidth);
+        return slides.findFirstBetweenX(getSnapPosition().x-1, viewportWidth);
     }
 
     function getNext() {
