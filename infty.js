@@ -31,14 +31,18 @@ function createSwipe(el, $slides, conf) {
         slides = new Slides($slides, viewportWidth, {
             onSlideAdd: handleSlideAdd,
             onSlidesChange: handleSlidesChange,
+            onPagesCount: handlePagesCount,
+            /**
+             * Lai nopizicionētus slides atbilstoši custom uzstādītajam snapPosition.x
+             *
+             * callback tiks padots slides instance, jo mirklī kas tiks izpildīts callback
+             * šeit esošā slides instance vēl nebūs uzstādīta (skat augstāk slides = new Slides)
+             */
+            onAfterPrepareSlides: setCustomSnapPosition,
+
             slidesPadding: getSlidesPadding,
             positionItems: getPositionItems(),
-            rotateItems: getRotateItems(),
-            onPagesCount: function(c){
-                if (pagesCountCb) {
-                    pagesCountCb(c)
-                }
-            }
+            rotateItems: getRotateItems()
         });
     }
 
@@ -46,6 +50,23 @@ function createSwipe(el, $slides, conf) {
         stepper = new Stepper({
             bezierCurve: stepperCurve
         });
+    }
+
+    /**
+     * Nopozicionējam sākuma stāvoklī
+     * Ja ir uzlikts custom snapPosition.x
+     * Tuvākais slide pie snapPosition.x nopozicionēsies tajā vietā
+     *
+     * Funkcija saņem slides instanci kā argumentu. Tāpēc šeit netiek izmantota "globālā" slides instance
+     */
+    function setCustomSnapPosition(slides) {
+        var x = getSnapPosition().x;
+        if (x != 0) {
+            var target = getSnapTarget(slides.findClosestToX(x));
+
+            slides.start();
+            slides.setXOffset(target.to.x - target.slide.getX());
+        }
     }
 
     function startMove(d) {
@@ -221,27 +242,27 @@ function createSwipe(el, $slides, conf) {
         // Ja direction left, tad tuvāko slide labajai malai
         if (d.direction == 'left') {
             if (d.isSwipe || moveRatio > 0.33333) {
-                return slides.findClosestToXFromRight(0)
+                return slides.findClosestToXFromRight(getSnapPosition().x)
             }
             else {
-                return slides.findClosestToXFromLeft(0)
+                return slides.findClosestToXFromLeft(getSnapPosition().x)
             }
         }
         else {
             if (d.isSwipe || moveRatio > 0.33333) {
-                return slides.findClosestToXFromLeft(0)
+                return slides.findClosestToXFromLeft(getSnapPosition().x)
             }
             else {
-                return slides.findClosestToXFromRight(0)   
+                return slides.findClosestToXFromRight(getSnapPosition().x)
             }
         }
     }
 
     /**
      * Atgriež x, y pozīciju uz kuru snapot
-     * padoto slide. Ja slide vajag snapot pret  
-     * lano malu, tad snap target būs 0
-     * Ja vajag pret kreiso malu, tad viewportWidth - slide.width
+     * padoto slide. Ja slide vajag snapot pret:
+     * labo malu, tad snap target būs 0 @todo šis ir konfigurējam
+     * Ja vajag pret kreiso malu, tad viewportWidth - slide.width @todo šis ir konfigurējam
      *
      * Te tiek ņemta vērā rotateItems pazīme, pēc tās tiek noteiks
      * vai snapot uz kreiso vai labo pusi
@@ -259,10 +280,7 @@ function createSwipe(el, $slides, conf) {
          * malu snapot slide
          */
         if (rotateItems) {
-            return {
-                x: 0,
-                y: undefined
-            }
+            return getSnapPosition()
         }
 
         /**
@@ -459,6 +477,16 @@ function createSwipe(el, $slides, conf) {
         return true;
     }
 
+    function getSnapPosition() {
+        if (conf && typeof conf.snapPosition != 'undefined') {
+            return conf.snapPosition;
+        }
+        return {
+            x: 0,
+            y: undefined
+        };
+    }
+
     function handleSlideAdd(index, el, slide) {
         if (slideAddCb) {
             slideAddCb(index, el, slide);
@@ -468,6 +496,12 @@ function createSwipe(el, $slides, conf) {
     function handleSlidesChange(slides) {
         if (slidesChangeCb) {
             slidesChangeCb(slides)
+        }
+    }
+
+    function handlePagesCount() {
+        if (pagesCountCb) {
+            pagesCountCb(c)
         }
     }
 
@@ -516,9 +550,6 @@ function createSwipe(el, $slides, conf) {
         onSlideMove: function(cb) {
             slideMoveCb = cb
         },
-        restart: function() {
-            slides.reset();
-        },
         nextSlide: function() {
             slideMoveStartCb(false);
 
@@ -553,6 +584,9 @@ function createSwipe(el, $slides, conf) {
         },
         enable: function() {
             setIsEnabled(true);
+        },
+        restart: function() {
+            slides.reset();
         },
         resize: function() {
             handleResize();

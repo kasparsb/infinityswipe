@@ -24,6 +24,11 @@ var Slides = function(slides, viewportWidth, conf) {
         this.changeCallbacks.push(this.conf.onSlidesChange)
     }
 
+    this.afterPrepareSlidesCallbacks = [];
+    if (this.conf && this.conf.onAfterPrepareSlides) {
+        this.afterPrepareSlidesCallbacks.push(this.conf.onAfterPrepareSlides)
+    }
+
     this.slidesElements = new elementsCollection(slides);
 
     this.setViewportWidth(viewportWidth);
@@ -55,6 +60,8 @@ Slides.prototype = {
 
         this.pagesCountCallback(this.getMaxPage());
         this.executeChangeCallbacks(this.slides);
+
+        this.executeAfterPrepareSlidesCallbacks(this);
     },
 
     /**
@@ -298,7 +305,6 @@ Slides.prototype = {
             this.slides[i].updateCss();
         }
 
-
         var mthis = this;
         this.balanceSlides(function(){
             mthis.executeChangeCallbacks(mthis.slides);
@@ -399,6 +405,15 @@ Slides.prototype = {
         }
     },
 
+    /**
+     * After execution of this.prepareSlides
+     */
+    executeAfterPrepareSlidesCallbacks: function() {
+        for (var i = 0; i < this.afterPrepareSlidesCallbacks.length; i++) {
+            this.afterPrepareSlidesCallbacks[i].apply(this, arguments);
+        }
+    },
+
     getSlidesPadding: function() {
         return this.conf.slidesPadding();
     },
@@ -448,6 +463,28 @@ Slides.prototype = {
         }
         
         return undefined;
+    },
+
+    /**
+     * Atrodam slide, kura getX ir viss tuvāk x no kreisās puses
+     */
+    findClosestToX: function(x) {
+        var r;
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (typeof r == 'undefined') {
+                r = i;
+                continue;
+            }
+
+            var d1 =  Math.abs(x - this.slides[i].getX());
+            var d2 =  Math.abs(x - this.slides[r].getX());
+
+            // Izlaižam visus, kas ir lielāki par x
+            if (d1 < d2) {
+                r = i;
+            }
+        }
+        return this.slides[r];
     },
 
     /**
