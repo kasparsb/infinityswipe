@@ -572,6 +572,13 @@ function createSwipe(el, $slides, conf) {
         },
         showSlide: function(index) {
             slides.showByIndex(index);
+
+            /**
+             * @todo Pārtaisīt, lai Snap position tiktu padots pašam slides
+             * lai šeit nav atsevišķi jāpiekoriģē slide pozicionējums
+             * bet varbūt tā nemaz nevajag, jo snapošana notiek šeit nevis iekš slides
+             */
+            setCustomSnapPosition(slides);
         },
         getCurrent: getCurrent,
         getNext: getNext,
