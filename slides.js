@@ -447,6 +447,18 @@ Slides.prototype = {
     },
 
     /**
+     * Find slide by dom element
+     */
+    findByDomElement: function(el) {
+        for (var i = 0; i < this.slidesCount; i++) {
+            if (this.slides[i].el === el || this.slides[i].el.contains(el)) {
+                return this.slides[i];
+            }
+        }
+        return false;
+    },
+
+    /**
      * Meklējam pirmo slide starp padotajām x koordinātēm
      * @searchDirection meklēšanas virziens ASC vai DESC
      */

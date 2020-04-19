@@ -4,7 +4,7 @@ var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
 
 function createSwipe(el, $slides, conf) {
-    var slideAddCb, changeCb, slidesChangeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){};
+    var slideAddCb, changeCb, slidesChangeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){}, slideClickCb = function(){};
     var slides, stepper, viewportWidth = 0, startMoveSlide;
     var startPos = 0, offsetX = 0, isMoveStarted = false;
     var stepperCurve = [0,0,.12,1];
@@ -24,7 +24,8 @@ function createSwipe(el, $slides, conf) {
         new Swipe(getSwipeTarget(), swipeConfig)
             .on('start', startMove)
             .on('move', handleMove)
-            .on('touchend', endMove) 
+            .on('tap', handleClick)
+            .on('end', endMove)
     }
 
     function initSlides() {
@@ -69,6 +70,10 @@ function createSwipe(el, $slides, conf) {
         }
     }
 
+    function handleClick(ev) {
+        slideClickCb(slides.findByDomElement(ev.touchedElement));
+    }
+
     function startMove(d) {
         if (!isEnabled) {
             return;
@@ -87,7 +92,7 @@ function createSwipe(el, $slides, conf) {
         slideMoveStartCb(d.touchedElement ? true : false);
     }
 
-    function handleMove(d) {    
+    function handleMove(d) {
         if (!isEnabled) {
             return;
         }
@@ -340,19 +345,25 @@ function createSwipe(el, $slides, conf) {
             isTouch = false;
         }
 
-        slides.start();
-
         /**
          * Aprēķinām kādu vajag offset, lai pārvietotos no getX uz target.to.x
          * Kad progress ir 0, tad offset atteicīgi arī ir 0
          * Kad progress ir 1, tad tas offset ir attālums starp target.slide.getX un target.to.x
          */
         var targetOffset = target.to.x - target.slide.getX();
+
+        // Ja targetOffset 0, tad bail, neko nedarām, nekāda kustība nenotiks
+        if (targetOffset === 0) {
+            return;
+        }
+
         var targetDirection = targetOffset > 0 ? 'right' : 'left';
 
         var startProgress = 0;
         var pv = 0;
         var slideMoveProgress = 0;
+
+        slides.start();
 
         stepper.runFrom(startProgress, {
             duration: stepperDuration,
@@ -499,7 +510,7 @@ function createSwipe(el, $slides, conf) {
         }
     }
 
-    function handlePagesCount() {
+    function handlePagesCount(c) {
         if (pagesCountCb) {
             pagesCountCb(c)
         }
@@ -549,6 +560,9 @@ function createSwipe(el, $slides, conf) {
          */
         onSlideMove: function(cb) {
             slideMoveCb = cb
+        },
+        onClick: function(cb) {
+            slideClickCb = cb;
         },
         nextSlide: function() {
             slideMoveStartCb(false);
