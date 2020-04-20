@@ -502,6 +502,25 @@ function createSwipe(el, $slides, conf) {
         };
     }
 
+    /**
+     * Uzstāda jaunu snapPostion
+     */
+    function setSnapPosition(p) {
+        conf.snapPosition = p;
+
+        slides.setBoxOffset({
+            left: getSnapPosition().x
+        })
+
+        /**
+         * @todo pārtaisīt, lai šeit netiktu izsaukts setCustomSnapPosition
+         * To pēc idejas vajadzētu darīt pašam slides
+         * bet atkal slides nenodarbojas ar pozicionēšanas animēšanu
+         * Kaut kas jāizdomā
+         */
+        setCustomSnapPosition(slides);
+    }
+
     function handleSlideAdd(index, el, slide) {
         if (slideAddCb) {
             slideAddCb(index, el, slide);
@@ -603,6 +622,7 @@ function createSwipe(el, $slides, conf) {
         getCurrent: getCurrent,
         getNext: getNext,
         getPrev: getPrev,
+        setSnapPosition: setSnapPosition,
         getSlides: function() {
             return slides;
         },

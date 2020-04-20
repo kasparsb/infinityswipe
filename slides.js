@@ -105,6 +105,10 @@ Slides.prototype = {
         this.viewport.width = width;
     },
 
+    setBoxOffset: function(offset) {
+        this.boxOffset = offset;
+    },
+
     resize: function() {
 
         /**
