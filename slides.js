@@ -29,6 +29,24 @@ var Slides = function(slides, viewportWidth, conf) {
         this.afterPrepareSlidesCallbacks.push(this.conf.onAfterPrepareSlides)
     }
 
+    /**
+     * Rāmja nobīdes no parent elementa, kurā pozicionēt slides
+     * Pēc noklusējuma slides tiek pozicionēti pret parent kreiso malu, kas ir 0
+     * Šo parametru jāvar mainīt
+     * @todo Pašlaik tiek izmanots tikai left mala, bet jāvar norādīt arī right
+     */
+    this.boxOffset = {
+        left: 0,
+        right: 0
+    }
+    if (this.conf && this.conf.boxOffset && this.conf.boxOffset.left) {
+        this.boxOffset.left = this.conf.boxOffset.left;
+    }
+    if (this.conf && this.conf.boxOffset && this.conf.boxOffset.right) {
+        this.boxOffset.right = this.conf.boxOffset.right;
+    }
+
+
     this.slidesElements = new elementsCollection(slides);
 
     this.setViewportWidth(viewportWidth);
@@ -66,7 +84,7 @@ Slides.prototype = {
 
     /**
      * @todo šito vajag uztaisīt
-     * Izkārtojam absolūti pozicionētos elementis vienu aiz otra
+     * Izkārtojam absolūti pozicionētos elementus vienu aiz otra
      */
     positionItems: function() {
         var mthis = this;
@@ -132,7 +150,7 @@ Slides.prototype = {
          * Norādīto slide liekam kā pašu pirmo vizuāli.
          * Visus slides, kas ir aiz tā izkārtojam secīgi
          */
-        var xOffset = 0;
+        var xOffset = this.boxOffset.left;
         for (var i = 0; i < this.slidesCount; i++) {
             this.slides[fi].x = (-this.slides[fi].xReal) + xOffset;
             this.slides[fi].index = index;
@@ -158,6 +176,7 @@ Slides.prototype = {
         }
 
         var mthis = this;
+
         this.balanceSlides(function(){
             mthis.executeChangeCallbacks(mthis.slides);
         });
@@ -352,7 +371,6 @@ Slides.prototype = {
     },
 
     balanceSlides: function(onChangeCb) {
-
         if (!this.conf.rotateItems) {
             return;
         }
@@ -362,6 +380,32 @@ Slides.prototype = {
             return;
         }
 
+        var hasChanged = false;
+        // Balansējam 4 reizes. Normālā gadījumā jāpietiek ar vienu reizi
+        for (var t = 0; t < 4; t++) {
+            if (this.balanceOnce()) {
+                hasChanged = true;
+            }
+        }
+
+        // Paziņojam tikai, ja ir bijušas izmaiņas
+        if (hasChanged && onChangeCb) {
+            onChangeCb();
+        }
+    },
+
+    /**
+     * Balansējam vienu reizi, overflow elementus sadalot vienādi pa left un right pusēm
+     *
+     * @todo Šādi īsti nav optimāli. Jo nobalansējot joprojām paliek situācija, kad
+     * vienā pusē trūkst, bet otrā ir par daudz.
+     * Ar šo metodi darīsim vēlreiz kamēr abās pusēs būs vienādies
+     * Vajag kaut kā gudrāk, lai uzreiz pārvieto uz to pusi kurai trūks
+     * Sarežģijums rodas, tad, kad slides ir dažāda platuma
+     *
+     * @param int Max balancēšanas piegājienu skaits
+     */
+    balanceOnce: function() {
         var b = this.slidesCountBeforeViewport();
         var a = this.slidesCountAfterViewport();
 
@@ -372,10 +416,9 @@ Slides.prototype = {
          */
         var d = Math.floor((a - b) / 2);
 
-
         // Ja nav neviena slaida, ko pārvietot, tad bail
         if (Math.abs(d) < 1) {
-            return;
+            return false;
         }
 
         /**
@@ -388,9 +431,9 @@ Slides.prototype = {
         for (var i = 0; i < d; i++) {
             this[method]();
         }
-        if (d > 0 && onChangeCb) {
-            onChangeCb();
-        }
+
+        // Atgriežam true, ja ir kaut viens slide balansēts
+        return d > 0;
     },
 
     executeSlideAddCallbacks: function() {

@@ -33,6 +33,7 @@ function createSwipe(el, $slides, conf) {
             onSlideAdd: handleSlideAdd,
             onSlidesChange: handleSlidesChange,
             onPagesCount: handlePagesCount,
+
             /**
              * Lai nopizicionētus slides atbilstoši custom uzstādītajam snapPosition.x
              *
@@ -43,7 +44,10 @@ function createSwipe(el, $slides, conf) {
 
             slidesPadding: getSlidesPadding,
             positionItems: getPositionItems(),
-            rotateItems: getRotateItems()
+            rotateItems: getRotateItems(),
+            boxOffset: {
+                left: getSnapPosition().x
+            }
         });
     }
 
@@ -588,11 +592,13 @@ function createSwipe(el, $slides, conf) {
             slides.showByIndex(index);
 
             /**
-             * @todo Pārtaisīt, lai Snap position tiktu padots pašam slides
-             * lai šeit nav atsevišķi jāpiekoriģē slide pozicionējums
-             * bet varbūt tā nemaz nevajag, jo snapošana notiek šeit nevis iekš slides
+             * @todo slideSnapTransitionDone ir jāpārtaisa par kaut ko loģiskāku
+             * Jo vajag izsaukt onChange eventu
              */
-            setCustomSnapPosition(slides);
+            slideSnapTransitionDone({
+                isSwipe: false,
+                isTouch: false
+            });
         },
         getCurrent: getCurrent,
         getNext: getNext,
