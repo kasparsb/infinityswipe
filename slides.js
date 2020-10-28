@@ -49,8 +49,9 @@ var Slides = function(slides, viewportWidth, conf) {
 
     this.slidesElements = new elementsCollection(slides);
 
-    this.setViewportWidth(viewportWidth);
-    this.prepareSlides(this.slidesElements);
+    // šīs darbības izdarīs infty
+    // this.setViewportWidth(viewportWidth);
+    // this.prepareSlides(this.slidesElements);
 }
 
 Slides.prototype = {
@@ -65,10 +66,9 @@ Slides.prototype = {
         if (this.conf.positionItems) {
             this.positionItems();
         }
-        
 
         slides.each(function(slide){
-            
+
             mthis.push(slide)
         })
 
@@ -80,6 +80,11 @@ Slides.prototype = {
         this.executeChangeCallbacks(this.slides);
 
         this.executeAfterPrepareSlidesCallbacks(this);
+    },
+
+    reset: function() {
+        this.slides = [];
+        this.prepareSlides(this.slidesElements);
     },
 
     /**
@@ -96,11 +101,6 @@ Slides.prototype = {
         })
     },
 
-    reset: function() {
-        this.slides = [];
-        this.prepareSlides(this.slidesElements);
-    },
-
     setViewportWidth: function(width) {
         this.viewport.width = width;
     },
@@ -109,26 +109,13 @@ Slides.prototype = {
         this.boxOffset = offset;
     },
 
-    resize: function() {
-
-        /**
-         *
-         * @todo Varbūt vajag kaut kā inteliģentāk pārrēķināt
-         * Jāņem vērā tekošais slides index
-         * jo lietotājs var būt aizskrolējis ļoti tālu
-         *
-         */
-        this.reset();
-
-    },
-
     /**
      * Rādām slide ar padoto index
      * tākā šis ir infinity slide, tad attiecīgi index var būt jebkāds
      * padotais index tiek pārrēķināts uz reālo slide index. Jo slides
      * skaits ir ierobežots un tie tiek reused
      *
-     * Fiziski pārvietojam padoto index uz sākumu. 
+     * Fiziski pārvietojam padoto index uz sākumu.
      * Visus pārējs slides pakārtojam padotajam slide index
      */
     showByIndex: function(index) {
@@ -138,8 +125,13 @@ Slides.prototype = {
         // Pēc padotā index atrodam reālo slide index
         var realIndex = index % this.slidesCount;
 
+        // Ja negatīvs, tad jāņem no beigām
+        if (realIndex < 0) {
+            realIndex = this.slidesCount + realIndex;
+        }
+
         /**
-         * Tagad meklējam slide, kuram atbilst realIndex un 
+         * Tagad meklējam slide, kuram atbilst realIndex un
          * pieglabājam slide indeksu masīvā
          */
         var fi;
@@ -170,7 +162,7 @@ Slides.prototype = {
             index++;
 
             /**
-             * Pārejam pie nākošā slide. Kad sasniegtas masīva beigas, tad 
+             * Pārejam pie nākošā slide. Kad sasniegtas masīva beigas, tad
              * metam ripā un sākam no masīva sākuma
              */
             fi++;
@@ -242,7 +234,7 @@ Slides.prototype = {
             }
         }
         return this.slides[r];
-    },    
+    },
 
     nextIndex: function() {
         if (this.last()) {
@@ -262,7 +254,7 @@ Slides.prototype = {
 
     /**
      * Saskaitām cik elementu ir ārpus viewport no labās puses
-     */ 
+     */
     slidesCountAfterViewport: function() {
         var r = 0;
         for (var i = 0; i < this.slidesCount; i++) {
@@ -276,7 +268,7 @@ Slides.prototype = {
 
     /**
      * Saskaitām cik elementu ir ārpus viewport no labās puses
-     */ 
+     */
     slidesCountBeforeViewport: function() {
         var r = 0;
         for (var i = 0; i < this.slidesCount; i++) {
@@ -300,7 +292,7 @@ Slides.prototype = {
             // Saglabājam reālo x pozīciju
             xReal: this.nextXReal()
         })
-        
+
         this.slidesCount = this.slides.push(s);
 
         s.updateCss();
@@ -314,9 +306,9 @@ Slides.prototype = {
     start: function() {
         this.slides.map(function(s){
             s.start();
-        }) 
+        })
     },
-    
+
     /**
      * Katram slide ir savs x
      * Uzliekam x offset, bet pašu x nemainām
@@ -363,10 +355,10 @@ Slides.prototype = {
         var lastSlide = this.visualLast();
 
         var w = lastSlide.width + this.getSlidesPadding();
-        
+
         // Palielinām index. Reālo indekss neaiztiekam
         slide.index = lastSlide.index + 1;
-        
+
         slide.x = ((lastSlide.xReal + w) - slide.xReal) + lastSlide.x;
 
         slide.updateCss();
@@ -520,7 +512,7 @@ Slides.prototype = {
                 return this.slides[r[i].indexReal];
             }
         }
-        
+
         return undefined;
     },
 
@@ -585,7 +577,7 @@ Slides.prototype = {
     },
 
     findLastBetweenX: function(x1, x2) {
-        return this.findBetweenX(x1, x2, 'desc');  
+        return this.findBetweenX(x1, x2, 'desc');
     },
 
     /**
@@ -598,7 +590,7 @@ Slides.prototype = {
 
             this.slides[i].pageReal = page;
             this.slides[i].page = page;
-        
+
             t += (this.slides[i].width + this.getSlidesPadding());
 
             // Nedaudz smaziām viewport platumu, lai lapā netiktu ieskaitīts

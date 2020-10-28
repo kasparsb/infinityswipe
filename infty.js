@@ -112,7 +112,7 @@ function createSwipe(el, $slides, conf) {
         slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction, d.touchedElement ? true : false);
 
         /**
-         * Ja nav jārotē items, tad jāčeko vai ir pienācis 
+         * Ja nav jārotē items, tad jāčeko vai ir pienācis
          * laiks apstādināt items pārvietošanos un jāsāk bremzēšana
          * Tipa elastic scroll
          *
@@ -136,7 +136,7 @@ function createSwipe(el, $slides, conf) {
         if (!isEnabled) {
             return;
         }
-        
+
         if (!isMoveStarted) {
             return;
         }
@@ -152,10 +152,10 @@ function createSwipe(el, $slides, conf) {
         }
 
         snapSlide(
-            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot    
+            // Šeit ņemam vērā isSwipe, lai saprastu uz kuru slide snapot
             getSnapTarget(getSlideToSnapByEndMove(d)),
 
-            d.isSwipe, 
+            d.isSwipe,
             d.touchedElement ? true : false,
 
             // Kāda ir manualMove distance
@@ -184,19 +184,19 @@ function createSwipe(el, $slides, conf) {
 
     /**
      * Tiek izmantota tikai no rotate gadījumā
-     * Vai pirmais slide tiek skrollēts pāri 
+     * Vai pirmais slide tiek skrollēts pāri
      * savām robežām
      */
     function isFirstSlideOut(offsetX) {
         return getFirstSlideOutWidth(offsetX) > 0
     }
     function getFirstSlideOutWidth(offsetX) {
-        
+
         var x = slides.first().getX();
         if (typeof offsetX != 'undefined') {
-            x = slides.first().getXWithoutOffset() + offsetX;    
+            x = slides.first().getXWithoutOffset() + offsetX;
         }
-        
+
         if (x > 0) {
             return x;
         }
@@ -225,9 +225,9 @@ function createSwipe(el, $slides, conf) {
         if (!rotateItems) {
             /**
              * Snap uz to slide, kurš ir ārpus zonas
-             * 
+             *
              * Ja neviens slide nav ārpus zonas, tad
-             * izpildīsies parastais scenārijs pēc 
+             * izpildīsies parastais scenārijs pēc
              * swipe kustības
              */
             if (isFirstSlideOut()) {
@@ -282,10 +282,10 @@ function createSwipe(el, $slides, conf) {
      */
     function getSlideSnapPosition(slideToSnap) {
         /**
-         * By default snapojam slide kreiso malu 
+         * By default snapojam slide kreiso malu
          * pie viewport kreisās malas
          *
-         * @todo Uztaisīt, lai var nodefinēt pret kuru 
+         * @todo Uztaisīt, lai var nodefinēt pret kuru
          * malu snapot slide
          */
         if (rotateItems) {
@@ -314,7 +314,7 @@ function createSwipe(el, $slides, conf) {
         }
 
         /**
-         * Jāpārbauda vai pēc slide snap netiks uztaisīt 
+         * Jāpārbauda vai pēc slide snap netiks uztaisīt
          * slide out situācija
          *
          * Šādi parasti notiek ar pēdējo slide
@@ -323,7 +323,7 @@ function createSwipe(el, $slides, conf) {
 
         // Pēc noklusējuma snapojam slide uz 0 pozīciju
         var d = (slides.last().getX() + slides.last().width) - viewportWidth;
-        
+
         return {
             x: Math.max(0, slideToSnap.getX() - d),
             y: undefined
@@ -372,7 +372,7 @@ function createSwipe(el, $slides, conf) {
         stepper.runFrom(startProgress, {
             duration: stepperDuration,
             onStep: function(progress){
-            
+
                 pv = progressToValue(progress, 0, targetOffset);
 
                 slides.setXOffset(pv);
@@ -384,7 +384,7 @@ function createSwipe(el, $slides, conf) {
                  * SlideMoveCb vienmēr dodam progrss turpinājumu
                  * Tas progress, kad ir te ir cits - tas ir progress no 0 līdz vietai, kura vajag snap slide
                  * Tāpēc šeit savādāk rēķinām progresus
-                 * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai 
+                 * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai
                  * slaidi uztaisīt snap savā vietā
                  * Ja virzieni sakrīt (lietotāja move un slidesnap), tad progresējam
                  * Ja nē, tad regresējam atpakaļ uz sākumu
@@ -408,10 +408,10 @@ function createSwipe(el, $slides, conf) {
 
                 slideMoveCb(slideMoveProgress, targetDirection, false);
 
-            }, 
+            },
             onDone: function() {
                 slideSnapTransitionDone({
-                    isSwipe: isSwipe, 
+                    isSwipe: isSwipe,
                     isTouch: isTouch
                 });
             }
@@ -543,22 +543,21 @@ function createSwipe(el, $slides, conf) {
         isEnabled = s;
     }
 
-    function handleResize() {
+    function setSlidesViewportWidth() {
         viewportWidth = getElementDimensions(el).width;
 
-        if (slides) {
-            slides.setViewportWidth(viewportWidth);
-            slides.resize();
-        }
+        slides.setViewportWidth(viewportWidth);
+        slides.reset();
     }
 
     // Liekam timeout, lai izpildās nākamajā scope
     // Vajag, lai izsaucošais kods var uzlikt onSlideAdd pirms tam
     setTimeout(function(){
-        handleResize();
         initSwipe();
         initSlides();
         initStepper();
+
+        setSlidesViewportWidth();
     });
 
     return {
@@ -636,11 +635,14 @@ function createSwipe(el, $slides, conf) {
             slides.reset();
         },
         resize: function() {
-            handleResize();
+            let current = getCurrent();
+            setSlidesViewportWidth();
+            if (current) {
+                slides.showByIndex(current.index);
+            }
         }
     }
 }
-
 
 module.exports = function(el, $slides, conf) {
     return createSwipe(el, $slides, conf);
