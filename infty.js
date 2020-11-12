@@ -2,6 +2,7 @@ var Swipe = require('swipe');
 var Stepper = require('stepper');
 var Slides = require('./slides');
 var getElementDimensions = require('./getElementDimensions');
+var replaceContent = require('./replaceContent');
 
 function createSwipe(el, $slides, conf) {
     var slideAddCb, changeCb, slidesChangeCb, pagesCountCb, slideMoveCb = function(){}, slideMoveStartCb = function(){}, slideClickCb = function(){};
@@ -523,7 +524,10 @@ function createSwipe(el, $slides, conf) {
 
     function handleSlideAdd(index, el, slide) {
         if (slideAddCb) {
-            slideAddCb(index, el, slide);
+            var newContent = slideAddCb(index, el, slide);
+            if (typeof newContent != 'undefined') {
+                replaceContent(el, newContent)
+            }
         }
     }
 
