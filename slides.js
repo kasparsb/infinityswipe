@@ -48,6 +48,10 @@ var Slides = function(slides, viewportWidth, conf) {
 
 
     this.slidesElements = new elementsCollection(slides);
+    // Ja ir this.conf.rotateItems, tad noklonējam slides elementus, lai iegūtu vajadzīgo min skaitu
+    if (this.conf.rotateItems) {
+        this.slidesElements.clone(5)
+    }
 
     // šīs darbības izdarīs infty
     // this.setViewportWidth(viewportWidth);
@@ -320,6 +324,11 @@ Slides.prototype = {
             this.slides[i].updateCss();
         }
 
+
+        /**
+         * @todo Nevajag balansēt slides, ja notiek move
+         * to jādara pēc move beigšanas
+         */
         var mthis = this;
         this.balanceSlides(function(){
             mthis.executeChangeCallbacks(mthis.slides);
