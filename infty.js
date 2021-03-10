@@ -110,7 +110,7 @@ function createSwipe(el, $slides, conf) {
             return;
         }
 
-        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction, d.touchedElement ? true : false);
+        slideMoveCb(Math.abs(d.offset.x) / viewportWidth, d.direction, d.touchedElement ? true : false, getVisible());
 
         /**
          * Ja nav jārotē items, tad jāčeko vai ir pienācis
@@ -382,7 +382,7 @@ function createSwipe(el, $slides, conf) {
                  * Ja snap slides notiek tajā pašā virzienā, kā bija move kustība, tad
                  * progresēja uz 1
                  * Ja snap slides notiek atpakaļ, tad progresējam uz 0
-                 * SlideMoveCb vienmēr dodam progrss turpinājumu
+                 * SlideMoveCb vienmēr dodam progress turpinājumu
                  * Tas progress, kad ir te ir cits - tas ir progress no 0 līdz vietai, kura vajag snap slide
                  * Tāpēc šeit savādāk rēķinām progresus
                  * Šeit ņemam to abs(offset) kādu veica lietotājs un liekam klāt to offset kādu vajag, lai
@@ -407,7 +407,7 @@ function createSwipe(el, $slides, conf) {
                     slideMoveProgress = progress
                 }
 
-                slideMoveCb(slideMoveProgress, targetDirection, false);
+                slideMoveCb(slideMoveProgress, targetDirection, false, getVisible());
 
             },
             onDone: function() {
@@ -438,6 +438,13 @@ function createSwipe(el, $slides, conf) {
         if (typeof changeCb != 'undefined') {
             changeCb(params);
         }
+    }
+
+    /**
+     * Atgriež viewportā redzamos slides
+     */
+    function getVisible() {
+        return slides.findVisibleBetweenX(getSnapPosition().x, viewportWidth)
     }
 
     function getCurrent() {

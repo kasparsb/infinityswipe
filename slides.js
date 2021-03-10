@@ -570,7 +570,7 @@ Slides.prototype = {
     findClosestToXFromRight: function(x) {
         var r;
         for (var i = 0; i < this.slidesCount; i++) {
-            // Izlaišam visus, kas ir lielāki par x
+            // Izlaižam visus, kas ir lielāki par x
             if (this.slides[i].getX() < x) {
                 continue;
             }
@@ -587,6 +587,31 @@ Slides.prototype = {
 
     findLastBetweenX: function(x1, x2) {
         return this.findBetweenX(x1, x2, 'desc');
+    },
+
+    /**
+     * Atgriežam redzamos slides starp x1 un x2 koordinātēm
+     * Arī, ja ir redzama tikai maza daļa no slide, tas skaitās visible
+     */
+    findVisibleBetweenX: function(x1, x2) {
+        var r = [];
+        for (var i = 0; i < this.slidesCount; i++) {
+            let slide = this.slides[i];
+            let sx = slide.getX();
+            let sxw = sx + slide.width;
+
+            let sxBetween = (sx > x1 && sx < x2);
+            let sxwBetween = (sxw > x1 && sxw < x2);
+
+            if (sxBetween || sxwBetween) {
+                // Redzamā daļa
+                var v = sxBetween ? x2 - sx : sxw - x1;
+                // Ierobežojam redzamo daļu, lai nav lielāka par width
+                v = v > slide.width ? slide.width : v;
+                r.push({slide: slide, visibleRatio: v / slide.width});
+            }
+        }
+        return r;
     },
 
     /**
